@@ -1,0 +1,26 @@
+﻿Build started 15/01/2014 00:56:07.
+     1>Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\SimpleHaar\SimpleHaar.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Release\SimpleHaar.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         All outputs are up-to-date.
+       Link:
+         z:\Programs\VS2010\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimpleHaar.exe" /NOLOGO /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\lib\Release" opencv_calib3d246.lib opencv_contrib246.lib opencv_core246.lib opencv_features2d246.lib opencv_flann246.lib opencv_gpu246.lib opencv_highgui246.lib opencv_imgproc246.lib opencv_legacy246.lib opencv_ml246.lib opencv_nonfree246.lib opencv_objdetect246.lib opencv_photo246.lib opencv_stitching246.lib opencv_ts246.lib opencv_video246.lib opencv_videostab246.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\SimpleHaar.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimpleHaar.pdb" /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimpleHaar.lib" /MACHINE:X86 Release\SimpleHaar.obj
+         "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\PoseDetectorHaar.lib"
+         Generating code
+         Finished generating code
+         SimpleHaar.vcxproj -> Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimpleHaar.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimpleHaar.exe;#1" /manifest Release\SimpleHaar.exe.intermediate.manifest
+       PostBuildEvent:
+         xcopy /I /E /Y /D "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release" "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\"
+         :VCEnd
+         0 File(s) copied
+       FinalizeBuildStatus:
+         Deleting file "Release\SimpleHaar.unsuccessfulbuild".
+         Touching "Release\SimpleHaar.lastbuildstate".
+     1>Done Building Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\SimpleHaar\SimpleHaar.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.50

@@ -1,0 +1,33 @@
+﻿Build started 15/01/2014 00:55:21.
+     1>Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\SimpleCLM\SimpleCLM.vcxproj" on node 3 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file "Release\SimpleCLM.lastbuildstate".
+       InitializeBuildStatus:
+         Creating "Release\SimpleCLM.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         z:\Programs\VS2010\VC\bin\CL.exe /c /I"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\\lib\local\CLM\include" /I"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\\lib\local\PoseDetectorHaar\include" /I"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\\lib\local\CLMWrapper\include" /I"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\boost" /I"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\boost\boost" /I"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\include\opencv" /I"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\include" /Zi /nologo /W3 /WX- /O2 /Oi /Ot /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /openmp /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt SimpleCLM.cpp
+         SimpleCLM.cpp
+     1>Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\local\CLMWrapper\include\CLMParameters.h(176): warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
+     1>Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\local\CLMWrapper\include\CLMParameters.h(183): warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
+       Link:
+         z:\Programs\VS2010\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimpleCLM.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\boost\lib" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\lib\Release" "libboost_filesystem-vc100-mt-1_54.lib" opencv_calib3d246.lib opencv_contrib246.lib opencv_core246.lib opencv_features2d246.lib opencv_flann246.lib opencv_gpu246.lib opencv_highgui246.lib opencv_imgproc246.lib opencv_legacy246.lib opencv_ml246.lib opencv_nonfree246.lib opencv_objdetect246.lib opencv_photo246.lib opencv_stitching246.lib opencv_ts246.lib opencv_video246.lib opencv_videostab246.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\SimpleCLM.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimpleCLM.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimpleCLM.lib" /MACHINE:X86 Release\SimpleCLM.obj
+         "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\CLM.lib"
+         "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\CLMWrapper.lib"
+         "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\PoseDetectorHaar.lib"
+         Generating code
+         Finished generating code
+         SimpleCLM.vcxproj -> Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimpleCLM.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimpleCLM.exe;#1" /manifest Release\SimpleCLM.exe.intermediate.manifest
+       PostBuildEvent:
+         xcopy /I /E /Y /D "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release" "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\"
+         :VCEnd
+         0 File(s) copied
+       FinalizeBuildStatus:
+         Deleting file "Release\SimpleCLM.unsuccessfulbuild".
+         Touching "Release\SimpleCLM.lastbuildstate".
+     1>Done Building Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\SimpleCLM\SimpleCLM.vcxproj" (rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:10.08

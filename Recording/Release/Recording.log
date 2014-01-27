@@ -1,0 +1,51 @@
+﻿Build started 05/12/2013 08:40:27.
+     1>Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\Recording\Recording.vcxproj" on node 5 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Release\Recording.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         z:\Programs\VS2010\VC\bin\CL.exe /c /I"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\include\opencv" /I"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\include" /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /openmp- /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt Record.cpp
+         Record.cpp
+     1>z:\downloads\clm framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdparty\opencv\include\opencv2\flann\logger.h(66): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 z:\Programs\VS2010\VC\include\stdio.h(234) : see declaration of 'fopen'
+     1>Record.cpp(79): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 z:\Programs\VS2010\VC\include\time.inl(112) : see declaration of 'localtime'
+     1>Record.cpp(118): warning C4018: '<' : signed/unsigned mismatch
+     1>Record.cpp(196): warning C4996: '_itoa': This function or variable may be unsafe. Consider using _itoa_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 z:\Programs\VS2010\VC\include\stdlib.h(451) : see declaration of '_itoa'
+       Link:
+         z:\Programs\VS2010\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\Recording.exe" /NOLOGO /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\lib\Release" opencv_calib3d246.lib opencv_contrib246.lib opencv_core246.lib opencv_features2d246.lib opencv_flann246.lib opencv_gpu246.lib opencv_highgui246.lib opencv_imgproc246.lib opencv_legacy246.lib opencv_ml246.lib opencv_nonfree246.lib opencv_objdetect246.lib opencv_photo246.lib opencv_stitching246.lib opencv_ts246.lib opencv_video246.lib opencv_videostab246.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\Recording.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\Recording.pdb" /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\Recording.lib" /MACHINE:X86 /PROFILE Release\Record.obj
+         Generating code
+         Finished generating code
+         Recording.vcxproj -> Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\Recording.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\Recording.exe;#1" /manifest Release\Recording.exe.intermediate.manifest
+       PostBuildEvent:
+         xcopy /I /E /Y /D "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release" "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\"
+         :VCEnd
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_calib3d246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_contrib246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_core246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_features2d246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_ffmpeg.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_ffmpeg246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_flann246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_gpu246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_highgui246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_imgproc246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_legacy246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_ml246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_nonfree246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_objdetect246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_photo246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_stitching246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\opencv_videostab246.dll
+         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Release\tbb.dll
+         18 File(s) copied
+       FinalizeBuildStatus:
+         Deleting file "Release\Recording.unsuccessfulbuild".
+         Touching "Release\Recording.lastbuildstate".
+     1>Done Building Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\Recording\Recording.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:08.40

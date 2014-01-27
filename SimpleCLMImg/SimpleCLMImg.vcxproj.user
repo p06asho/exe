@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseTBB|Win32'">
+    <LocalDebuggerCommandArguments>-f "F:\cam3d\part 5 dyad\segmentedDisparity\seg11\images\frame000001.png"-fd "F:\cam3d\part 5 dyad\segmentedDisparity\seg11\aligned\depthAligned000001.png"</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LocalDebuggerCommandArguments>-f "F:\datasets\wild test data no bb/2968784797_1.jpg" -fdirs "F:\datasets\wild test data no bb/" -mloc "model/main_wild.txt" -clmwild -oidir "F:\CCNF experiments\CLNF\CLM fitting\testing scripts wild\out_clnf_cpp_no_bb/" -ofdir "F:\CCNF experiments\CLNF\CLM fitting\testing scripts wild\out_clnf_cpp_no_bb/"</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerWorkingDirectory>$(TargetDir)</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerWorkingDirectory>$(TargetDir)</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-mloc model/main_svr_ml_wild.txt  -multi_view 1 -clm_sigma 1.5 -reg 25 -w_reg 5 -fdir "C:\Users\tb346/Dropbox/AAM/test data/AFW/" -ofdir "F:\Visual Studio 2010\Projects\Clm_framework\matlab runners/out_clm_wild/" -oidir "F:\Visual Studio 2010\Projects\Clm_framework\matlab runners/out_clm_wild/" -clmwild </LocalDebuggerCommandArguments>
+  </PropertyGroup>
+</Project>

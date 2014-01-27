@@ -1,0 +1,25 @@
+﻿Build started 27/01/2014 21:07:54.
+     1>Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\ConsolePuppets\ConsolePuppets.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Release\ConsolePuppets.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         All outputs are up-to-date.
+       Link:
+         All outputs are up-to-date.
+         ConsolePuppets.vcxproj -> Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\ConsolePuppets.exe
+       PostBuildEvent:
+         xcopy /I /E /Y /D /C "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\freeglut\freeglut.dll" "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\"
+         xcopy /I /E /Y /D /C "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\GTK+\bin" "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\"
+         xcopy /I /E /Y /D /C "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\videos\default.wmv" "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\"
+         :VCEnd
+         0 File(s) copied
+         0 File(s) copied
+         0 File(s) copied
+       FinalizeBuildStatus:
+         Deleting file "Release\ConsolePuppets.unsuccessfulbuild".
+         Touching "Release\ConsolePuppets.lastbuildstate".
+     1>Done Building Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\ConsolePuppets\ConsolePuppets.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.55

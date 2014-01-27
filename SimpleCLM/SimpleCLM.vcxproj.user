@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseIPPTBB|Win32'">
+    <LocalDebuggerCommandArguments>-f C:\BU\uniform-light\jim2.avi -ov C:\BU\uniform-light\jim2out.avi -op C:\code\GAVAM\Sequences\outputSequences\ictDB\easy\seq26\out.txt -fx 500 -fy 500 -cx 160 -cy 120</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LocalDebuggerCommandArguments>-root "C:\Users\Tadas/Dropbox/AAM/test data/bu/uniform-light//" -f "jam1.avi" -op "CLMr3_acc/jam1.txt" -f "jam2.avi" -op "CLMr3_acc/jam2.txt" -f "jam3.avi" -op "CLMr3_acc/jam3.txt" -f "jam4.avi" -op "CLMr3_acc/jam4.txt" -f "jam5.avi" -op "CLMr3_acc/jam5.txt" -f "jam6.avi" -op "CLMr3_acc/jam6.txt" -f "jam7.avi" -op "CLMr3_acc/jam7.txt" -f "jam8.avi" -op "CLMr3_acc/jam8.txt" -f "jam9.avi" -op "CLMr3_acc/jam9.txt" -f "jim1.avi" -op "CLMr3_acc/jim1.txt" -f "jim2.avi" -op "CLMr3_acc/jim2.txt" -f "jim3.avi" -op "CLMr3_acc/jim3.txt" -f "jim4.avi" -op "CLMr3_acc/jim4.txt" -f "jim5.avi" -op "CLMr3_acc/jim5.txt" -f "jim6.avi" -op "CLMr3_acc/jim6.txt" -f "jim7.avi" -op "CLMr3_acc/jim7.txt" -f "jim8.avi" -op "CLMr3_acc/jim8.txt" -f "jim9.avi" -op "CLMr3_acc/jim9.txt" -f "llm1.avi" -op "CLMr3_acc/llm1.txt" -f "llm2.avi" -op "CLMr3_acc/llm2.txt" -f "llm3.avi" -op "CLMr3_acc/llm3.txt" -f "llm4.avi" -op "CLMr3_acc/llm4.txt" -f "llm5.avi" -op "CLMr3_acc/llm5.txt" -f "llm6.avi" -op "CLMr3_acc/llm6.txt" -f "llm7.avi" -op "CLMr3_acc/llm7.txt" -mode clmacc  -fx 500 -fy 500 -cx 160 -cy 120 -mloc "model/main_svr_sl.txt"</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)$(Configuration)\</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseTBB|Win32'">
+    <LocalDebuggerCommandArguments>-f "C:/Users/tb346/Documents/datasets/mind-reader avi labeled/angry/angry/angry0.avi" -fx 517 -fy 517 -cx 160 -cy 120</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommandArguments>-f D:/Databases/DISFA/Videos_LeftCamera/LeftVideoSN001_comp.avi</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)$(Configuration)\</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+</Project>

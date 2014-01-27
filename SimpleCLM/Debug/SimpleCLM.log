@@ -1,0 +1,27 @@
+﻿Build started 03/01/2014 18:31:06.
+     1>Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\SimpleCLM\SimpleCLM.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\SimpleCLM.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         All outputs are up-to-date.
+       Link:
+         z:\Programs\VS2010\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\SimpleCLM.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\boost\lib" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\lib\Debug" "libboost_filesystem-vc100-mt-gd-1_54.lib" opencv_calib3d246d.lib opencv_contrib246d.lib opencv_core246d.lib opencv_features2d246d.lib opencv_flann246d.lib opencv_gpu246d.lib opencv_highgui246d.lib opencv_imgproc246d.lib opencv_legacy246d.lib opencv_ml246d.lib opencv_nonfree246d.lib opencv_objdetect246d.lib opencv_photo246d.lib opencv_stitching246d.lib opencv_ts246d.lib opencv_video246d.lib opencv_videostab246d.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\SimpleCLM.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\SimpleCLM.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\SimpleCLM.lib" /MACHINE:X86 Debug\SimpleCLM.obj
+         "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\CLMWrapper.lib"
+         "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\CLM.lib"
+         "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\PoseDetectorHaar.lib"
+     1>SimpleCLM.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
+         SimpleCLM.vcxproj -> Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\SimpleCLM.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\SimpleCLM.exe;#1" /manifest Debug\SimpleCLM.exe.intermediate.manifest
+       PostBuildEvent:
+         xcopy /I /E /Y /D "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Debug" "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\"
+         :VCEnd
+         0 File(s) copied
+       FinalizeBuildStatus:
+         Deleting file "Debug\SimpleCLM.unsuccessfulbuild".
+         Touching "Debug\SimpleCLM.lastbuildstate".
+     1>Done Building Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\SimpleCLM\SimpleCLM.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:02.61

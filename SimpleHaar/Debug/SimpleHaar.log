@@ -1,0 +1,31 @@
+﻿Build started 04/12/2013 22:12:11.
+     1>Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\SimpleHaar\SimpleHaar.vcxproj" on node 4 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\SimpleHaar.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         z:\Programs\VS2010\VC\bin\CL.exe /c /I"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\\lib\local\PoseDetectorHaar\include" /I"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\include\opencv" /I"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\include" /ZI /nologo /W3 /WX- /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt SimpleHaar.cpp
+         SimpleHaar.cpp
+     1>z:\downloads\clm framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdparty\opencv\include\opencv2\flann\logger.h(66): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 z:\programs\vs2010\vc\include\stdio.h(234) : see declaration of 'fopen'
+     1>z:\downloads\clm framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\simplehaar\simplehaar.cpp(93): warning C4018: '<' : signed/unsigned mismatch
+     1>z:\downloads\clm framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\simplehaar\simplehaar.cpp(115): warning C4018: '<' : signed/unsigned mismatch
+     1>z:\downloads\clm framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\simplehaar\simplehaar.cpp(181): warning C4018: '<' : signed/unsigned mismatch
+       Link:
+         z:\Programs\VS2010\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\SimpleHaar.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\lib\Debug" opencv_calib3d246d.lib opencv_contrib246d.lib opencv_core246d.lib opencv_features2d246d.lib opencv_flann246d.lib opencv_gpu246d.lib opencv_highgui246d.lib opencv_imgproc246d.lib opencv_legacy246d.lib opencv_ml246d.lib opencv_nonfree246d.lib opencv_objdetect246d.lib opencv_photo246d.lib opencv_stitching246d.lib opencv_ts246d.lib opencv_video246d.lib opencv_videostab246d.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\SimpleHaar.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\SimpleHaar.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\SimpleHaar.lib" /MACHINE:X86 Debug\SimpleHaar.obj
+         "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\PoseDetectorHaar.lib"
+     1>SimpleHaar.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
+         SimpleHaar.vcxproj -> Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\SimpleHaar.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\SimpleHaar.exe;#1" /manifest Debug\SimpleHaar.exe.intermediate.manifest
+       PostBuildEvent:
+         xcopy /I /E /Y /D "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\bin\Debug" "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Debug\"
+         :VCEnd
+         0 File(s) copied
+       FinalizeBuildStatus:
+         Deleting file "Debug\SimpleHaar.unsuccessfulbuild".
+         Touching "Debug\SimpleHaar.lastbuildstate".
+     1>Done Building Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\SimpleHaar\SimpleHaar.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:02.27
