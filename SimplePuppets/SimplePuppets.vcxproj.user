@@ -3,7 +3,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)$(Configuration)\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>-fa "C:\Clm-Z with GAVAM\exe\Recording\recording\2013-07-16-11-00.avi" -mloc "./model/main.txt"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>
+    </LocalDebuggerCommandArguments>
     <ShowAllFiles>true</ShowAllFiles>
     <LocalDebuggerEnvironment>
     </LocalDebuggerEnvironment>

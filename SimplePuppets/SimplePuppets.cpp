@@ -80,6 +80,9 @@ Mat warpedFace;
 vector<Vec6f> triangles;
 bool gotContext;
 //GLFWwindow* window;
+int mainargc;
+char **mainargv;
+int GLWindowID;
 
 
 
@@ -284,7 +287,7 @@ vector<string> get_arguments(int argc, char **argv)
 	return arguments;
 }
 
-void doTransformation(Mat img)
+void doTransformation(Mat img, int argc, char **argv)
 {
 	//Don't get new triangulations every time. Use the original set of triangles, and apply it like a texture
 	warpedFace = Mat(img.rows, img.cols, img.type());	
@@ -293,6 +296,12 @@ void doTransformation(Mat img)
 		//glfwInit();
 		//window = glfwCreateWindow(640, 480, "Output", NULL, NULL);
 		//glfwMakeContextCurrent(window);
+		//glutInit(&argc, argv);
+		glutInitWindowSize(640, 480);
+		glutInitWindowPosition(0,0);
+		GLWindowID = glutCreateWindow("Output");
+		glutSetWindow(GLWindowID);
+		gotContext = true;
 	}
 	//Rendering stuff here. Remember to swap buffers each time. 
 	glPixelStorei(GL_PACK_ALIGNMENT, (img.step & 3) ? 1 : 4);//use fast 4-byte alignment (default anyway) if possible
@@ -300,6 +309,7 @@ void doTransformation(Mat img)
 	Mat flipped;
 	flip(img, flipped, 0);
 	glReadPixels(0, 0, img.cols, img.rows, GL_BGR, GL_UNSIGNED_BYTE, flipped.data);//We'll have to do some chopping etc before this is usable. 
+	glutSwapBuffers();
 }
 
 void extractFace(Mat img)
@@ -812,7 +822,7 @@ void doFaceTracking(int argc, char **argv){
 			}
 			else
 			{
-				doTransformation(img);//fiddle with it
+				doTransformation(img, argc, argv);//fiddle with it
 			}
 //			namedWindow("face", 1);
 //			imshow("face", face);
@@ -835,7 +845,8 @@ void doFaceTracking(int argc, char **argv){
 int main (int argc, char **argv)
 {
 	omp_init_lock(&writelock);	
-	doFaceTracking(argc,argv);
+	glutInit(&argc, argv);
+	doFaceTracking(argc, argv);
 	omp_destroy_lock(&writelock);
 	return 0;
 }
