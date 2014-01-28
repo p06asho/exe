@@ -83,6 +83,7 @@ bool gotContext;
 int mainargc;
 char **mainargv;
 int GLWindowID;
+GLuint textureID;
 
 
 
@@ -287,6 +288,66 @@ vector<string> get_arguments(int argc, char **argv)
 	return arguments;
 }
 
+GLuint matToTexture(cv::Mat &mat, GLenum minFilter, GLenum magFilter, GLenum wrapFilter)
+{
+	// Generate a number for our textureID's unique handle
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+ 
+	// Bind to our texture handle
+	glBindTexture(GL_TEXTURE_2D, textureID);
+ 
+	// Catch silly-mistake texture interpolation method for magnification
+	if (magFilter == GL_LINEAR_MIPMAP_LINEAR  ||
+	    magFilter == GL_LINEAR_MIPMAP_NEAREST ||
+	    magFilter == GL_NEAREST_MIPMAP_LINEAR ||
+	    magFilter == GL_NEAREST_MIPMAP_NEAREST)
+	{
+		cout << "You can't use MIPMAPs for magnification - setting filter to GL_LINEAR" << endl;
+		magFilter = GL_LINEAR;
+	}
+ 
+	// Set texture interpolation methods for minification and magnification
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+ 
+	// Set texture clamping method
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapFilter);
+ 
+	// Set incoming texture format to:
+	// GL_BGR       for CV_CAP_OPENNI_BGR_IMAGE,
+	// GL_LUMINANCE for CV_CAP_OPENNI_DISPARITY_MAP,
+	// Work out other mappings as required ( there's a list in comments in main() )
+	GLenum inputColourFormat = GL_BGR;
+	if (mat.channels() == 1)
+	{
+		inputColourFormat = GL_LUMINANCE;
+	}
+ 
+	// Create the texture
+	glTexImage2D(GL_TEXTURE_2D,     // Type of texture
+	             0,                 // Pyramid level (for mip-mapping) - 0 is the top level
+	             GL_RGB,            // Internal colour format to convert to
+	             mat.cols,          // Image width  i.e. 640 for Kinect in standard mode
+	             mat.rows,          // Image height i.e. 480 for Kinect in standard mode
+	             0,                 // Border width in pixels (can either be 1 or 0)
+	             inputColourFormat, // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
+	             GL_UNSIGNED_BYTE,  // Image data type
+	             mat.ptr());        // The actual image data itself
+ 
+	// If we're using mipmaps then generate them. Note: This requires OpenGL 3.0 or higher
+	if (minFilter == GL_LINEAR_MIPMAP_LINEAR  ||
+	    minFilter == GL_LINEAR_MIPMAP_NEAREST ||
+	    minFilter == GL_NEAREST_MIPMAP_LINEAR ||
+	    minFilter == GL_NEAREST_MIPMAP_NEAREST)
+	{
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+ 
+	return textureID;
+}
+
 void doTransformation(Mat img, int argc, char **argv)
 {
 	//Don't get new triangulations every time. Use the original set of triangles, and apply it like a texture
@@ -302,13 +363,17 @@ void doTransformation(Mat img, int argc, char **argv)
 		GLWindowID = glutCreateWindow("Output");
 		glutSetWindow(GLWindowID);
 		gotContext = true;
+		textureID = matToTexture(img, GL_NEAREST, GL_NEAREST, GL_CLAMP);
 	}
 	//Rendering stuff here. Remember to swap buffers each time. 
-	glPixelStorei(GL_PACK_ALIGNMENT, (img.step & 3) ? 1 : 4);//use fast 4-byte alignment (default anyway) if possible
-	glPixelStorei(GL_PACK_ROW_LENGTH, img.step/img.elemSize());//set length of one complete row in destination data (doesn't need to equal img.cols)
-	Mat flipped;
-	flip(img, flipped, 0);
-	glReadPixels(0, 0, img.cols, img.rows, GL_BGR, GL_UNSIGNED_BYTE, flipped.data);//We'll have to do some chopping etc before this is usable. 
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glBegin(GL_QUADS);
+		glTexCoord2f(0.0, 0.0);
+		glTexCoord2f(0.0, 1.0);
+		glTexCoord2f(1.0, 0.0);
+		glTexCoord2f(1.0, 1.0);
+	glEnd();
 	glutSwapBuffers();
 }
 

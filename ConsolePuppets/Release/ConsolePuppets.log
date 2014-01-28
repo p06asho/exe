@@ -1,4 +1,4 @@
-﻿Build started 27/01/2014 22:45:14.
+﻿Build started 28/01/2014 13:15:35.
      1>Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\ConsolePuppets\ConsolePuppets.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Release\ConsolePuppets.unsuccessfulbuild" because "AlwaysCreate" was specified.
@@ -13,8 +13,7 @@
          xcopy /I /E /Y /D /C "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\videos\default.wmv" "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\"
          :VCEnd
          0 File(s) copied
-         Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\GTK+\bin\gtk-builder-convert
-         1 File(s) copied
+         0 File(s) copied
          0 File(s) copied
        FinalizeBuildStatus:
          Deleting file "Release\ConsolePuppets.unsuccessfulbuild".
@@ -23,4 +22,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.53
+Time Elapsed 00:00:01.26

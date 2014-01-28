@@ -1,5 +1,5 @@
-﻿Build started 27/01/2014 23:09:55.
-     1>Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\SimplePuppets\SimplePuppets.vcxproj" on node 2 (build target(s)).
+﻿Build started 28/01/2014 13:15:35.
+     1>Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\SimplePuppets\SimplePuppets.vcxproj" on node 3 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Release\SimplePuppets.unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
@@ -9,10 +9,10 @@
                  z:\Programs\VS2010\VC\include\stdio.h(234) : see declaration of 'fopen'
      1>Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\local\CLMWrapper\include\CLMParameters.h(176): warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
      1>Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\local\CLMWrapper\include\CLMParameters.h(183): warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
-     1>SimplePuppets.cpp(327): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(620): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+     1>SimplePuppets.cpp(393): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(686): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
                  z:\Programs\VS2010\VC\include\stdio.h(371) : see declaration of 'sprintf'
-     1>SimplePuppets.cpp(772): warning C4996: '_itoa': This function or variable may be unsafe. Consider using _itoa_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+     1>SimplePuppets.cpp(838): warning C4996: '_itoa': This function or variable may be unsafe. Consider using _itoa_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
                  z:\Programs\VS2010\VC\include\stdlib.h(451) : see declaration of '_itoa'
        Link:
          z:\Programs\VS2010\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimplePuppets.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\\lib\3rdParty\Glew" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\GTK+\bin" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\boost\lib" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\boost\boost" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\boost" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\lib\Release" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\GTK+\lib" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\freeglut\lib" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\lib\Release" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\boost\lib" opengl32.lib "gtk-win32-2.0.lib" "gdk-win32-2.0.lib" "atk-1.0.lib" "gdk_pixbuf-2.0.lib" glew.lib "pangowin32-1.0.lib" "pangocairo-1.0.lib" "pango-1.0.lib" cairo.lib "gthread-2.0.lib" "gobject-2.0.lib" "gmodule-2.0.lib" "glib-2.0.lib" user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib glu32.lib freeglut.lib opencv_calib3d246.lib opencv_contrib246.lib opencv_core246.lib opencv_features2d246.lib opencv_flann246.lib opencv_gpu246.lib opencv_highgui246.lib opencv_imgproc246.lib opencv_legacy246.lib opencv_ml246.lib opencv_nonfree246.lib opencv_objdetect246.lib opencv_photo246.lib opencv_stitching246.lib opencv_ts246.lib opencv_video246.lib opencv_videostab246.lib "libboost_filesystem-vc100-mt-1_54.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\SimplePuppets.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimplePuppets.pdb" /SUBSYSTEM:CONSOLE /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimplePuppets.lib" /MACHINE:X86 /PROFILE Release\SimplePuppets.obj
@@ -42,4 +42,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:13.10
+Time Elapsed 00:00:15.56
