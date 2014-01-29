@@ -51,9 +51,9 @@
 #include <GL/freeglut.h>
 #include<GL/GL.h>
 #include "SimplePuppets.h"
+#include <cv.h>
 
 omp_lock_t writelock;
-
 
 // The modules that are being used for tracking
 CLMTracker::TrackerCLM clmModel;
@@ -342,25 +342,44 @@ void doTransformation(Mat img, int argc, char **argv)
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	for (int i = 0; i < trianglemembers.size(); i++)
 		{
-			glBegin(GL_TRIANGLES);
-				glTexCoord2f(initFeatures[trianglemembers[i][0]].x/640.0, 
-					1.0 - initFeatures[trianglemembers[i][0]].y/480.0);
-
-				glVertex2d((features[trianglemembers[i][0]].x/320.0) - 1.0, 
-					1.0 - (features[trianglemembers[i][0]].y/240.0));
-
-				glTexCoord2f(initFeatures[trianglemembers[i][1]].x/640.0, 
-					1.0 - initFeatures[trianglemembers[i][1]].y/480.0);
-
-				glVertex2d((features[trianglemembers[i][1]].x/320.0) - 1.0, 
-					1.0 - (features[trianglemembers[i][1]].y/240.0));
-
-				glTexCoord2f(initFeatures[trianglemembers[i][2]].x/640.0, 
-					1.0 - initFeatures[trianglemembers[i][2]].y/480.0);
-
-				glVertex2d((features[trianglemembers[i][2]].x/320.0) - 1.0, 
-					1.0 - (features[trianglemembers[i][2]].y/240.0));
-			glEnd();
+			bool draw = true;
+			if ((features[61].y - features[64].y) < -3 || (features[61].y - features[64].y) > 3)
+			{
+				int n = 0;
+				for (int a = 0; a < 3; a++)
+				{
+					if (trianglemembers[i][a] >= 60 || trianglemembers[i][a] == 48 || trianglemembers[i][a] == 54)
+					{
+						n++;
+					}
+				}
+				if (n >= 3)
+				{
+					draw = false;
+				}
+			}
+			if (draw)
+			{
+				glBegin(GL_TRIANGLES);
+					glTexCoord2f(initFeatures[trianglemembers[i][0]].x/640.0, 
+						1.0 - initFeatures[trianglemembers[i][0]].y/480.0);
+	
+					glVertex2d((features[trianglemembers[i][0]].x/320.0) - 1.0, 
+						1.0 - (features[trianglemembers[i][0]].y/240.0));
+	
+					glTexCoord2f(initFeatures[trianglemembers[i][1]].x/640.0, 
+						1.0 - initFeatures[trianglemembers[i][1]].y/480.0);
+	
+					glVertex2d((features[trianglemembers[i][1]].x/320.0) - 1.0, 
+						1.0 - (features[trianglemembers[i][1]].y/240.0));
+	
+					glTexCoord2f(initFeatures[trianglemembers[i][2]].x/640.0, 
+						1.0 - initFeatures[trianglemembers[i][2]].y/480.0);
+	
+					glVertex2d((features[trianglemembers[i][2]].x/320.0) - 1.0, 
+						1.0 - (features[trianglemembers[i][2]].y/240.0));
+				glEnd();
+			}
 		}
 	
 //	glBegin(GL_QUADS);
@@ -436,13 +455,16 @@ void extractFace(Mat img)
 		}
 	}
 	namedWindow("triangulated", 1);
-	imshow("triangulated", tri);
+	imshow("triangulated", tri);//show off the results
 
-	//Use matrix transformations to get a texture in direct, 'face-on' orientation. 
-	//In this orientation, the face should be roughly symmetric - get distances between specific points in different axes and stretch/compress parts of the image accordingly. 
-	//Then rotate the whole thing in 2d to be 'right side up'
-
-
+	//now get some edges so we can try to include the hair
+	Mat gray;
+	Mat edges;
+	cvtColor(img, gray, CV_BGR2GRAY);
+	double thresh = threshold(gray, edges, 0, 255, THRESH_BINARY+THRESH_OTSU);
+	Canny(gray, edges, thresh/2.0, thresh*2);
+	namedWindow("edges", 1);
+	imshow("edges", edges);
 	gotFace = true;//Don't do it every frame
 }
 
