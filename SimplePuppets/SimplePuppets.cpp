@@ -75,15 +75,14 @@ Vec6d poseEstimateCLM;
 bool visi [66];
 Mat shape;
 Point features[66];
-Mat face;
-Mat warpedFace;
-vector<Vec6f> triangles;
+Point initFeatures[66];
 bool gotContext;
 //GLFWwindow* window;
 int mainargc;
 char **mainargv;
 int GLWindowID;
 GLuint textureID;
+vector<vector<int>> trianglemembers;
 
 
 
@@ -291,21 +290,10 @@ vector<string> get_arguments(int argc, char **argv)
 GLuint matToTexture(cv::Mat &mat, GLenum minFilter, GLenum magFilter, GLenum wrapFilter)
 {
 	// Generate a number for our textureID's unique handle
-	GLuint textureID;
 	glGenTextures(1, &textureID);
  
-	// Bind to our texture handle
+	// Bind to texture handle
 	glBindTexture(GL_TEXTURE_2D, textureID);
- 
-	// Catch silly-mistake texture interpolation method for magnification
-	if (magFilter == GL_LINEAR_MIPMAP_LINEAR  ||
-	    magFilter == GL_LINEAR_MIPMAP_NEAREST ||
-	    magFilter == GL_NEAREST_MIPMAP_LINEAR ||
-	    magFilter == GL_NEAREST_MIPMAP_NEAREST)
-	{
-		cout << "You can't use MIPMAPs for magnification - setting filter to GL_LINEAR" << endl;
-		magFilter = GL_LINEAR;
-	}
  
 	// Set texture interpolation methods for minification and magnification
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
@@ -315,35 +303,16 @@ GLuint matToTexture(cv::Mat &mat, GLenum minFilter, GLenum magFilter, GLenum wra
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapFilter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapFilter);
  
-	// Set incoming texture format to:
-	// GL_BGR       for CV_CAP_OPENNI_BGR_IMAGE,
-	// GL_LUMINANCE for CV_CAP_OPENNI_DISPARITY_MAP,
-	// Work out other mappings as required ( there's a list in comments in main() )
-	GLenum inputColourFormat = GL_BGR;
-	if (mat.channels() == 1)
-	{
-		inputColourFormat = GL_LUMINANCE;
-	}
- 
 	// Create the texture
 	glTexImage2D(GL_TEXTURE_2D,     // Type of texture
-	             0,                 // Pyramid level (for mip-mapping) - 0 is the top level
+	             0,                 // Pyramid level (top)
 	             GL_RGB,            // Internal colour format to convert to
-	             mat.cols,          // Image width  i.e. 640 for Kinect in standard mode
-	             mat.rows,          // Image height i.e. 480 for Kinect in standard mode
-	             0,                 // Border width in pixels (can either be 1 or 0)
-	             inputColourFormat, // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
+	             mat.cols,          // Image width - will be 640
+	             mat.rows,          // Image height - will be 480
+	             0,                 // No border
+	             GL_BGR,			// Input image format
 	             GL_UNSIGNED_BYTE,  // Image data type
 	             mat.ptr());        // The actual image data itself
- 
-	// If we're using mipmaps then generate them. Note: This requires OpenGL 3.0 or higher
-	if (minFilter == GL_LINEAR_MIPMAP_LINEAR  ||
-	    minFilter == GL_LINEAR_MIPMAP_NEAREST ||
-	    minFilter == GL_NEAREST_MIPMAP_LINEAR ||
-	    minFilter == GL_NEAREST_MIPMAP_NEAREST)
-	{
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
  
 	return textureID;
 }
@@ -351,7 +320,6 @@ GLuint matToTexture(cv::Mat &mat, GLenum minFilter, GLenum magFilter, GLenum wra
 void doTransformation(Mat img, int argc, char **argv)
 {
 	//Don't get new triangulations every time. Use the original set of triangles, and apply it like a texture
-	warpedFace = Mat(img.rows, img.cols, img.type());	
 	if (!gotContext)
 	{
 		//glfwInit();
@@ -363,17 +331,46 @@ void doTransformation(Mat img, int argc, char **argv)
 		GLWindowID = glutCreateWindow("Output");
 		glutSetWindow(GLWindowID);
 		gotContext = true;
-		textureID = matToTexture(img, GL_NEAREST, GL_NEAREST, GL_CLAMP);
+		Mat flipped;
+		flip(img, flipped, 0);
+		textureID = matToTexture(flipped, GL_NEAREST, GL_NEAREST, GL_CLAMP);
+		
 	}
 	//Rendering stuff here. Remember to swap buffers each time. 
+	glClear(GL_COLOR_BUFFER_BIT);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, textureID);
-	glBegin(GL_QUADS);
-		glTexCoord2f(0.0, 0.0);
-		glTexCoord2f(0.0, 1.0);
-		glTexCoord2f(1.0, 0.0);
-		glTexCoord2f(1.0, 1.0);
-	glEnd();
+	for (int i = 0; i < trianglemembers.size(); i++)
+		{
+			glBegin(GL_TRIANGLES);
+				glTexCoord2f(initFeatures[trianglemembers[i][0]].x/640.0, 
+					1.0 - initFeatures[trianglemembers[i][0]].y/480.0);
+
+				glVertex2d((features[trianglemembers[i][0]].x/320.0) - 1.0, 
+					1.0 - (features[trianglemembers[i][0]].y/240.0));
+
+				glTexCoord2f(initFeatures[trianglemembers[i][1]].x/640.0, 
+					1.0 - initFeatures[trianglemembers[i][1]].y/480.0);
+
+				glVertex2d((features[trianglemembers[i][1]].x/320.0) - 1.0, 
+					1.0 - (features[trianglemembers[i][1]].y/240.0));
+
+				glTexCoord2f(initFeatures[trianglemembers[i][2]].x/640.0, 
+					1.0 - initFeatures[trianglemembers[i][2]].y/480.0);
+
+				glVertex2d((features[trianglemembers[i][2]].x/320.0) - 1.0, 
+					1.0 - (features[trianglemembers[i][2]].y/240.0));
+			glEnd();
+		}
+	
+//	glBegin(GL_QUADS);
+//		glTexCoord2f(0.0, 0.0); glVertex2d(-1.0, -1.0);
+//		glTexCoord2f(0.0, 1.0); glVertex2d(-1.0, 1.0);
+//		glTexCoord2f(1.0, 1.0); glVertex2d(1.0, 1.0);
+//		glTexCoord2f(1.0, 0.0); glVertex2d(1.0, -1.0);
+//	glEnd();
+//	glDrawArrays(GL_QUADS, 0, 4);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glutSwapBuffers();
 }
 
@@ -385,6 +382,7 @@ void extractFace(Mat img)
 	for (int i = 0; i < 66; i++)
 	{
 		subdiv.insert(features[i]);
+		initFeatures[i] = features[i];
 	}
 	vector<Vec6f> triangleList;
 	subdiv.getTriangleList(triangleList);
@@ -397,9 +395,9 @@ void extractFace(Mat img)
 		pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
 		pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
 		bool draw = true;
-		for (int i = 0; i < 3; i++)
+		for (int m = 0; m < 3; m++)
 		{
-			if (pt[i].x < 0 || pt[i].x >= tri.cols || pt[i].y < 0 || pt[i].y >= tri.rows)
+			if (pt[m].x < 0 || pt[m].x >= tri.cols || pt[m].y < 0 || pt[m].y >= tri.rows)
 			{
 				draw = false;
 			}
@@ -409,7 +407,32 @@ void extractFace(Mat img)
 			cv::line(tri, pt[0], pt[1], 255);
 			cv::line(tri, pt[1], pt[2], 255);
 			cv::line(tri, pt[2], pt[0], 255);
-			triangles.push_back(t);
+			vector<int> tripoints;
+			for (int j = 0; j < 66; j++)
+			{
+				int k = 0;
+				if (features[j].x == pt[0].x && features[j].y == pt[0].y)
+				{
+					tripoints.push_back(j);
+					k++;
+				}
+				if (features[j].x == pt[1].x && features[j].y == pt[1].y)
+				{
+					tripoints.push_back(j);
+					k++;
+				}
+				if (features[j].x == pt[2].x && features[j].y == pt[2].y)
+				{
+					tripoints.push_back(j);
+					k++;
+				}
+				if (k == 2)
+				{
+					break;
+				}
+			}
+			trianglemembers.push_back(tripoints);
+			trianglemembers.push_back(tripoints);
 		}
 	}
 	namedWindow("triangulated", 1);
@@ -423,74 +446,11 @@ void extractFace(Mat img)
 	gotFace = true;//Don't do it every frame
 }
 
-void extractFaceOld(Mat img)
-{
-	if (gotFace) return;//don't need to grab it once we already have it
-	else
-	{
-		//Get one!
-		//join the dots
-		Mat ccut(img.rows, img.cols, img.type());
-		face = Mat(img.rows, img.cols, img.type());
-		for (int i = 0; i < 16; i++) //perimeter
-		{
-			cv::line(ccut, features[i], features[i+1], 255, 2);
-		}
-		cv::line(ccut, features[16], features[26], 255, 2);
-		for (int i = 26; i > 17; i--) //eyebrows
-		{
-			cv::line(ccut, features[i], features[i-1], 255, 2);
-		}
-		cv::line(ccut, features[17], features[0], 255, 2);
-
-		namedWindow("cutter", 1);
-		imshow("cutter", ccut);		
-		
-		//scanline: problem here
-		int firsts [480];
-		int lasts [480];
-		for (int i = 0; i < 480; i++)
-		{
-			firsts[i] = 0;
-			lasts[i] = 0;
-		}
-		for (int i = 0; i < img.rows; i++)//for each row
-		{
-			bool found = false;
-			for (int j = 0; j < img.cols; j++)//along the row
-			{				
-				if (!found && (ccut.at<int>(i,j) == 255))
-				{
-					firsts[i] = j;//point to include from
-					found = true; //we're no longer looking for a first!
-				}
-				if (found && (ccut.at<int>(i,j) == 255))
-				{
-					lasts[i] = j;//point to include until
-				}
-			}
-		}
-		for (int i = 0; i < ccut.rows; i++)
-		{
-			if (!(lasts[i] == 0))
-			{
-				for (int j = firsts[i]; j <= lasts[i]; j++)
-				{
-					face.at<double>(i,j) = img.at<double>(i,j);
-				}
-			}
-		}
-
-		gotFace = true;//Don't repeat the work
-		namedWindow("face", 1);
-		imshow("face", face);
-	}
-}
-
 void doFaceTracking(int argc, char **argv){
 
 
 	bool done = false;
+	printf("OpenCV version: %d %d \n", CV_VERSION_MAJOR, CV_VERSION_MINOR);
 
 	while(!done )
 	{
@@ -885,12 +845,10 @@ void doFaceTracking(int argc, char **argv){
 			{
 				extractFace(img);//get the part of the image we want to transform
 			}
-			else
+			if (gotFace)
 			{
 				doTransformation(img, argc, argv);//fiddle with it
 			}
-//			namedWindow("face", 1);
-//			imshow("face", face);
 		}	
 
 		trackingInitialised = false;
