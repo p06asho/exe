@@ -52,6 +52,8 @@
 #include<GL/GL.h>
 #include "SimplePuppets.h"
 #include <cv.h>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/photo/photo.hpp>
 
 omp_lock_t writelock;
 
@@ -64,7 +66,6 @@ Mat avatarS2;				//shape
 String avatarfile2;			//file where the avatar is
 string file = "..\\videos\\default.wmv";
 string oldfile;
-Mat background;
 
 bool GETFACE = false;		//get a new face
 bool SHOWIMAGE = false;		//show the webcam image (in the main window). Turned on when the matrix isn't empty
@@ -82,7 +83,10 @@ int mainargc;
 char **mainargv;
 int GLWindowID;
 GLuint textureID;
+GLuint backgroundID;
 vector<vector<int>> trianglemembers;
+Mat initImg;
+Mat background;
 
 
 
@@ -317,78 +321,107 @@ GLuint matToTexture(cv::Mat &mat, GLenum minFilter, GLenum magFilter, GLenum wra
 	return textureID;
 }
 
-void doTransformation(Mat img, int argc, char **argv)
+void doTransformation()
 {
 	//Don't get new triangulations every time. Use the original set of triangles, and apply it like a texture
 	if (!gotContext)
 	{
-		//glfwInit();
-		//window = glfwCreateWindow(640, 480, "Output", NULL, NULL);
-		//glfwMakeContextCurrent(window);
-		//glutInit(&argc, argv);
+		background = initImg.clone();
+		Point perimeter[27];
+		for (int i = 0; i < 17; i++)
+		{
+			perimeter[i] = features[i];
+		}
+		for (int i = 26; i >= 22; i--)
+		{
+			perimeter[17+(26-i)] = features[i];
+		}
+		for (int i = 21; i >=17; i--)
+		{
+			perimeter[22+(21-i)] = features[i];
+		}
 		glutInitWindowSize(640, 480);
 		glutInitWindowPosition(0,0);
 		GLWindowID = glutCreateWindow("Output");
 		glutSetWindow(GLWindowID);
 		gotContext = true;
 		Mat flipped;
-		flip(img, flipped, 0);
+		flip(initImg, flipped, 0);
 		textureID = matToTexture(flipped, GL_NEAREST, GL_NEAREST, GL_CLAMP);
-		
+		//flip(initImg, background, 0);
+		//fillConvexPoly(background, perimeter, 27, Scalar(0));
+		//backgroundID = matToTexture(background, GL_NEAREST, GL_NEAREST, GL_CLAMP);
 	}
 	//Rendering stuff here. Remember to swap buffers each time. 
 	glClear(GL_COLOR_BUFFER_BIT);
 	glEnable(GL_TEXTURE_2D);
+	/*glBindTexture(GL_TEXTURE_2D, backgroundID);
+	glBegin(GL_QUADS);
+		glTexCoord2f(0.0, 0.0); glVertex2d(-1.0, -1.0);
+		glTexCoord2f(0.0, 1.0); glVertex2d(-1.0, 1.0);
+		glTexCoord2f(1.0, 1.0); glVertex2d(1.0, 1.0);
+		glTexCoord2f(1.0, 0.0); glVertex2d(1.0, -1.0);
+	glEnd();
+	glDrawArrays(GL_QUADS, 0, 4);*/
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	for (int i = 0; i < trianglemembers.size(); i++)
+	{
+		bool draw = true;
+		if ((features[61].y - features[64].y) < -3 || (features[61].y - features[64].y) > 3)//only start leaving the gap if we're sure the mouth is open
 		{
-			bool draw = true;
-			if ((features[61].y - features[64].y) < -3 || (features[61].y - features[64].y) > 3)
+			bool top = false;
+			bool bottom = false;
+			for (int a = 0; a < 3; a++)//check whether the triangle covers the area between the lips
 			{
-				int n = 0;
-				for (int a = 0; a < 3; a++)
+				if (trianglemembers[i][a] >= 60 && trianglemembers[i][a] <= 62)
 				{
-					if (trianglemembers[i][a] >= 60 || trianglemembers[i][a] == 48 || trianglemembers[i][a] == 54)
-					{
-						n++;
-					}
+					top = true;
 				}
-				if (n >= 3)
+				if (trianglemembers[i][a] > 62)
 				{
-					draw = false;
+					bottom = true;
 				}
 			}
-			if (draw)
+			if (top && bottom)//if it does, don't draw it!
 			{
-				glBegin(GL_TRIANGLES);
-					glTexCoord2f(initFeatures[trianglemembers[i][0]].x/640.0, 
-						1.0 - initFeatures[trianglemembers[i][0]].y/480.0);
-	
-					glVertex2d((features[trianglemembers[i][0]].x/320.0) - 1.0, 
-						1.0 - (features[trianglemembers[i][0]].y/240.0));
-	
-					glTexCoord2f(initFeatures[trianglemembers[i][1]].x/640.0, 
-						1.0 - initFeatures[trianglemembers[i][1]].y/480.0);
-	
-					glVertex2d((features[trianglemembers[i][1]].x/320.0) - 1.0, 
-						1.0 - (features[trianglemembers[i][1]].y/240.0));
-	
-					glTexCoord2f(initFeatures[trianglemembers[i][2]].x/640.0, 
-						1.0 - initFeatures[trianglemembers[i][2]].y/480.0);
-	
-					glVertex2d((features[trianglemembers[i][2]].x/320.0) - 1.0, 
-						1.0 - (features[trianglemembers[i][2]].y/240.0));
-				glEnd();
+				draw = false;
 			}
 		}
-	
-//	glBegin(GL_QUADS);
-//		glTexCoord2f(0.0, 0.0); glVertex2d(-1.0, -1.0);
-//		glTexCoord2f(0.0, 1.0); glVertex2d(-1.0, 1.0);
-//		glTexCoord2f(1.0, 1.0); glVertex2d(1.0, 1.0);
-//		glTexCoord2f(1.0, 0.0); glVertex2d(1.0, -1.0);
-//	glEnd();
-//	glDrawArrays(GL_QUADS, 0, 4);
+		if (draw)
+		{
+			glBegin(GL_TRIANGLES);
+				glTexCoord2f(initFeatures[trianglemembers[i][0]].x/640.0, 
+					1.0 - initFeatures[trianglemembers[i][0]].y/480.0);
+						glVertex2d((features[trianglemembers[i][0]].x/320.0) - 1.0, 
+					1.0 - (features[trianglemembers[i][0]].y/240.0));
+						glTexCoord2f(initFeatures[trianglemembers[i][1]].x/640.0, 
+					1.0 - initFeatures[trianglemembers[i][1]].y/480.0);
+						glVertex2d((features[trianglemembers[i][1]].x/320.0) - 1.0, 
+					1.0 - (features[trianglemembers[i][1]].y/240.0));
+						glTexCoord2f(initFeatures[trianglemembers[i][2]].x/640.0, 
+					1.0 - initFeatures[trianglemembers[i][2]].y/480.0);
+						glVertex2d((features[trianglemembers[i][2]].x/320.0) - 1.0, 
+					1.0 - (features[trianglemembers[i][2]].y/240.0));
+			glEnd();
+		}
+	}
+	/*glBegin(GL_TRIANGLES);//TODO
+		//loop the perimeter
+		for (int i = 0; i < 17; i++)
+		{
+			//if i mod 2 is 0, draw with two perimeter points and an extreme point
+			if (i % 2 = 0)
+			{
+				glTexCoord2f(
+			}
+			else
+			{
+
+			}
+			//otherwise 1 and 2. 
+		}
+	glEnd()*/
+
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glutSwapBuffers();
 }
@@ -462,10 +495,11 @@ void extractFace(Mat img)
 	Mat edges;
 	cvtColor(img, gray, CV_BGR2GRAY);
 	double thresh = threshold(gray, edges, 0, 255, THRESH_BINARY+THRESH_OTSU);
-	Canny(gray, edges, thresh/2.0, thresh*2);
+	Canny(gray, edges, thresh/2.0, thresh);
 	namedWindow("edges", 1);
 	imshow("edges", edges);
 	gotFace = true;//Don't do it every frame
+	
 }
 
 void doFaceTracking(int argc, char **argv){
@@ -866,10 +900,11 @@ void doFaceTracking(int argc, char **argv){
 			if (!gotFace)
 			{
 				extractFace(img);//get the part of the image we want to transform
+				initImg = img.clone();
 			}
 			if (gotFace)
 			{
-				doTransformation(img, argc, argv);//fiddle with it
+				doTransformation();//fiddle with it
 			}
 		}	
 
