@@ -54,6 +54,7 @@
 #include <cv.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/photo/photo.hpp>
+#include <cmath>
 
 omp_lock_t writelock;
 
@@ -87,6 +88,9 @@ GLuint backgroundID;
 vector<vector<int>> trianglemembers;
 Mat initImg;
 Mat background;
+vector<Point> extraPoints;
+vector<Point> extraUpdated;
+vector<vector<vector<int>>> extraMembers;
 
 
 
@@ -293,31 +297,13 @@ vector<string> get_arguments(int argc, char **argv)
 
 GLuint matToTexture(cv::Mat &mat, GLenum minFilter, GLenum magFilter, GLenum wrapFilter)
 {
-	// Generate a number for our textureID's unique handle
 	glGenTextures(1, &textureID);
- 
-	// Bind to texture handle
 	glBindTexture(GL_TEXTURE_2D, textureID);
- 
-	// Set texture interpolation methods for minification and magnification
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
- 
-	// Set texture clamping method
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapFilter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapFilter);
- 
-	// Create the texture
-	glTexImage2D(GL_TEXTURE_2D,     // Type of texture
-	             0,                 // Pyramid level (top)
-	             GL_RGB,            // Internal colour format to convert to
-	             mat.cols,          // Image width - will be 640
-	             mat.rows,          // Image height - will be 480
-	             0,                 // No border
-	             GL_BGR,			// Input image format
-	             GL_UNSIGNED_BYTE,  // Image data type
-	             mat.ptr());        // The actual image data itself
- 
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mat.cols, mat.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, mat.ptr());
 	return textureID;
 }
 
@@ -394,10 +380,12 @@ void doTransformation()
 					1.0 - initFeatures[trianglemembers[i][0]].y/480.0);
 						glVertex2d((features[trianglemembers[i][0]].x/320.0) - 1.0, 
 					1.0 - (features[trianglemembers[i][0]].y/240.0));
+
 						glTexCoord2f(initFeatures[trianglemembers[i][1]].x/640.0, 
 					1.0 - initFeatures[trianglemembers[i][1]].y/480.0);
 						glVertex2d((features[trianglemembers[i][1]].x/320.0) - 1.0, 
 					1.0 - (features[trianglemembers[i][1]].y/240.0));
+
 						glTexCoord2f(initFeatures[trianglemembers[i][2]].x/640.0, 
 					1.0 - initFeatures[trianglemembers[i][2]].y/480.0);
 						glVertex2d((features[trianglemembers[i][2]].x/320.0) - 1.0, 
@@ -405,6 +393,58 @@ void doTransformation()
 			glEnd();
 		}
 	}
+	//calculate a size change to use with the extra points
+	//double yScaleFactor = ((features[30].y - features[27].y)/(initFeatures[30].y - initFeatures[27].y));//universal y scale based on points on the nose which should be fixed in relation to each other
+	//for (int i = 0; i < 10; i++)
+	//{
+//		double newdistance = extraPoints[i].y - initFeatures[i+17].y;
+		//newdistance = abs(newdistance);
+		//newdistance *= yScaleFactor;
+		//new x position based on (for points above the eyebrows) that of the eyebrow points and (for points to the side) the changed x distance between eyebrow points
+		//first 10 points are above the eyebrows
+		//Point newPos(features[17+i].x, 
+			//cvRound(features[17+i].y - newdistance));
+		//extraUpdated.push_back(newPos);
+		//then two side points
+		//then two halfway points
+	//}
+	//double xScaleFactor = ((features[17].x - features[21].x)/(initFeatures[17].x - initFeatures[21].x));
+	//for (int i = 10; i < 12; i++)
+	//{
+//		Point newPos(cvRound(extraPoints[i].x*xScaleFactor), 
+			//cvRound(extraPoints[i].y*yScaleFactor));
+		//extraUpdated.push_back(newPos);
+	//}
+	//xScaleFactor = ((features[22].x - features[26].x)/(initFeatures[22].x - initFeatures[26].x));
+	//for (int i = 12; i < 14; i++)
+	//{
+//		Point newPos(cvRound(extraPoints[i].x*xScaleFactor), 
+			//cvRound(extraPoints[i].y*yScaleFactor));
+		//extraUpdated.push_back(newPos);
+	//}
+	//for (int i = 0; i < extraMembers.size(); i++)
+	//{
+//		glBegin(GL_TRIANGLES);
+			//for (int j = 0; j < 3; j++)
+			//{
+//				if (extraMembers[i][j][0] == 0)//we're dealing with an extraMembers point
+				//{
+//					glTexCoord2f(extraPoints[extraMembers[i][j][1]].x/640.0,
+						//1.0 - extraPoints[extraMembers[i][j][1]].y/480.0);
+					//glVertex2d((extraUpdated[extraMembers[i][j][1]].x/320.0)-1.0,
+//						1.0 - (extraUpdated[extraMembers[i][j][1]].y/240.0));
+//					
+				//}
+				//else//we're dealing with an initFeatures point
+				//{
+//					glTexCoord2f(initFeatures[trianglemembers[i][j]].x/640.0,
+						//1.0 - initFeatures[trianglemembers[i][j]].y/480.0);
+					//glVertex2d((features[trianglemembers[i][j]].x/320.0)-1.0,
+//						1.0 - (features[trianglemembers[i][j]].y/240.0));
+				//}
+			//}
+		//glEnd();
+	//}
 	/*glBegin(GL_TRIANGLES);//TODO
 		//loop the perimeter
 		for (int i = 0; i < 17; i++)
@@ -424,6 +464,148 @@ void doTransformation()
 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glutSwapBuffers();
+}
+
+void getExtraPoints(Mat edges)
+{
+	Rect r(0, 0, edges.cols, edges.rows);
+	cv::Subdiv2D subdiv(r);
+	//17 to 21: one eyebrow
+	//22 to 26: other eyebrow
+	//0-16: perimeter
+	for (int i = 17; i < 27; i++)//eyebrows
+	{
+		for (int j = 0; j <= features[i].y; j++)
+		{
+			if (edges.at<uchar>(Point(features[i].x, j)) != 0)
+			{
+				extraPoints.push_back(Point(i, j));
+				subdiv.insert(Point(i,j));
+				subdiv.insert(features[i]);
+				break;
+			}
+		}
+	}
+	for (int i = 0; i <= features[17].x; i++)//side points out from the eyebrows
+	{
+		if (edges.at<uchar>(Point(i, features[17].y)) != 0)
+		{
+			extraPoints.push_back(Point(i, features[17].y));
+			subdiv.insert(Point(i, features[17].y));
+			subdiv.insert(features[17]);
+			break;
+		}
+	}
+	for (int i = edges.cols - 1; i >= features[26].x; i--)//
+	{
+		if (edges.at<uchar>(Point(i, features[26].y)) != 0)
+		{
+			extraPoints.push_back(Point(i, features[26].y));
+			subdiv.insert(Point(i, features[26].y));
+			subdiv.insert(features[26]);
+			break;
+		}
+	}
+	for (int i = edges.rows - 1; i >= 0; i--)//halfway between the side points and the points above the outside of the eyebrows
+	{
+		if (edges.at<uchar>(Point(cvRound((features[0].x+features[17].x)/2), i)) != 0)
+		{
+			extraPoints.push_back(Point(cvRound((features[0].x+features[17].x)/2), i));
+			subdiv.insert(Point(cvRound((features[0].x+features[17].x)/2), i));
+			subdiv.insert(features[17]);
+			break;
+		}
+	}
+	for (int i = edges.rows - 1; i >= 0; i--)
+	{
+		if (edges.at<uchar>(Point(cvRound((features[16].x+features[26].x)/2), i)) != 0)
+		{
+			extraPoints.push_back(Point(cvRound((features[16].x+features[26].x)/2), i));
+			subdiv.insert(Point(cvRound((features[16].x+features[26].x)/2), i));
+			subdiv.insert(features[26]);
+			break;
+		}
+	}
+	vector<Vec6f> triList;
+	subdiv.getTriangleList(triList);
+	for (int z = 0; z < triList.size(); z++)
+	{
+		bool use = true;
+		vector<vector<int>> current;
+		Vec6f triangle = triList[z];
+		for (int j = 0; j < 3; j++)
+		{
+			if (triangle[2*j] < 0 || triangle[2*j] >= edges.cols || triangle[(2*j)+1] < 0 || triangle[(2*j)+1] >= edges.rows)
+			{
+				use = false;
+			}
+		}
+		if (use)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				for (int i = 0; i < extraPoints.size(); i++)
+				{
+					if (triangle[0] == extraPoints[i].x && triangle[1] == extraPoints[i].y)
+					{
+						vector<int> point;
+						point.push_back(0);
+						point.push_back(i);
+						current.push_back(point);
+					}
+					if (triangle[2] == extraPoints[i].x && triangle[3] == extraPoints[i].y)
+					{
+						vector<int> point;
+						point.push_back(0);
+						point.push_back(i);
+						current.push_back(point);
+					}
+					if (triangle[4] == extraPoints[i].x && triangle[5] == extraPoints[i].y)
+					{
+						vector<int> point;
+						point.push_back(0);
+						point.push_back(i);
+						current.push_back(point);
+					}
+				}
+				for (int i = 17; i <= 26; i++)
+				{
+					if (triangle[0] == features[i].x && triangle[1] == features[i].y)
+					{
+						vector<int> point;
+						point.push_back(1);
+						point.push_back(i);
+						current.push_back(point);
+					}
+					if (triangle[2] == features[i].x && triangle[3] == features[i].y)
+					{
+						vector<int> point;
+						point.push_back(1);
+						point.push_back(i);
+						current.push_back(point);
+					}
+					if (triangle[4] == features[i].x && triangle[5] == features[i].y)
+					{
+						vector<int> point;
+						point.push_back(1);
+						point.push_back(i);
+						current.push_back(point);
+					}
+				}
+				if (current.size() == 3)
+				{
+					extraMembers.push_back(current);
+					break;
+				}
+			}
+		}
+	}
+	Mat points(edges.rows, edges.cols, initImg.type());
+	for (int i = 0; i < extraPoints.size(); i++)
+	{
+		cv::circle(points, extraPoints[i], 2, Scalar(0,0,255));
+	}
+	imshow("Extra Points", points);
 }
 
 void extractFace(Mat img)
@@ -478,7 +660,7 @@ void extractFace(Mat img)
 					tripoints.push_back(j);
 					k++;
 				}
-				if (k == 2)
+				if (k == 3)
 				{
 					break;
 				}
@@ -499,14 +681,13 @@ void extractFace(Mat img)
 	namedWindow("edges", 1);
 	imshow("edges", edges);
 	gotFace = true;//Don't do it every frame
-	
+	//getExtraPoints(edges);
 }
 
 void doFaceTracking(int argc, char **argv){
 
 
 	bool done = false;
-	printf("OpenCV version: %d %d \n", CV_VERSION_MAJOR, CV_VERSION_MINOR);
 
 	while(!done )
 	{
@@ -572,8 +753,6 @@ void doFaceTracking(int argc, char **argv){
 				USEWEBCAM = false;
 				CHANGESOURCE = true;
 				resetERIExpression();
-				cout << "Not using Webcam. " << endl;
-				//FATAL_STREAM( "Failed to open video source" );
 			}
 		}
 
@@ -581,21 +760,26 @@ void doFaceTracking(int argc, char **argv){
 		if( !USEWEBCAM)
 		{
 
-			if(file.size() > 0 ){
+			if(file.size() > 0 )
+			{
 				INFO_STREAM( "Attempting to read from file: " << file );
 				vCap = VideoCapture( file );
 			}
-			else {
+			else 
+			{
 				INFO_STREAM("No file specified. Please use webcam or load file manually");
 				USEWEBCAM = 1;
-
 			}
 		}
-
-
+		vCap = VideoCapture("Z:\\Documents\\Project\\init.wmv");
+		if (!vCap.isOpened())
+		{
+			printf("Failed to open file");
+		}
 
 		Mat img;
-		vCap >> img;
+		vCap.read(img);
+		//vCap >> img;
 
 
 		// If no dimensions defined, do not do any resizing
@@ -650,7 +834,7 @@ void doFaceTracking(int argc, char **argv){
 		//also occasionally opencv error when changing between different sizes of video input/webcam owing to shape going outside boundries. 
 
 
-
+		gotContext = false;
 		while(!img.empty() && !CHANGESOURCE && !done)						//This is where stuff happens once the file's open.
 		{		
 			//for constant-size input:
@@ -661,7 +845,8 @@ void doFaceTracking(int argc, char **argv){
 			cvtColor(img, gray, CV_BGR2GRAY);
 			cvtColor(img, rgbimg, CV_BGR2RGB);
 
-			if(GRAYSCALE){
+			if(GRAYSCALE)
+			{
 				cvtColor(gray, rgbimg, CV_GRAY2RGB);
 			}
 
@@ -669,7 +854,8 @@ void doFaceTracking(int argc, char **argv){
 
 			writeToFile = 0;
 
-			if(GETFACE){
+			if(GETFACE)
+			{
 				GETFACE = false;
 				writeToFile = !writeToFile;
 				PAWREADAGAIN = true;
@@ -792,35 +978,7 @@ void doFaceTracking(int argc, char **argv){
 				clmParams.wSizeCurrent = clmParams.wSizeInit;
 			}
 
-			// Changes for no reinit version
-			//success = true;
-			//clmParams.wSizeCurrent = clmParams.wSizeInit;
-
 			poseEstimateCLM = CLMWrapper::GetPoseCLM(clmModel, fx, fy, cx, cy, clmParams);
-
-		/*	if(success)			
-			{
-				int idx = clmModel._clm.GetViewIdx(); 	
-
-				// drawing the facial features on the face if tracking is successful
-				clmModel._clm._pdm.Draw(disp, clmModel._shape, clmModel._clm._triangulations[idx], clmModel._clm._visi[0][idx]);
-
-
-				//cout << clmModel._clm.shape << endl;
-				//cv::imshow("other", clmModel._shape);
-
-				DrawBox(disp, poseEstimateCLM, Scalar(255,0,0), 3, fx, fy, cx, cy);			
-			}
-			else if(!clmModel._clm._pglobl.empty())
-			{			
-				int idx = clmModel._clm.GetViewIdx(); 	
-
-				// draw the facial features
-				clmModel._clm._pdm.Draw(disp, clmModel._shape, clmModel._clm._triangulations[idx], clmModel._clm._visi[0][idx]);
-
-				// if tracking fails draw a red outline
-				DrawBox(disp, poseEstimateCLM, Scalar(0,0,255), 3, fx, fy, cx, cy);	
-			}*/
 
 			shape = clmModel._shape;
 			//Use poseEstimateCLM for box
@@ -856,14 +1014,14 @@ void doFaceTracking(int argc, char **argv){
 			fpsSt += fpsC;
 			cv::putText(disprgb, fpsSt, cv::Point(10,20), CV_FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(255,0,0));
 
-
-
 			opencvImage = disprgb;
 
-			if(disprgb.empty()){
+			if(disprgb.empty())
+			{
 				SHOWIMAGE = false;
 			}
-			else{
+			else
+			{
 				SHOWIMAGE = true;
 			}
 
@@ -899,8 +1057,10 @@ void doFaceTracking(int argc, char **argv){
 			}
 			if (!gotFace)
 			{
-				extractFace(img);//get the part of the image we want to transform
+				extractFace(img);
 				initImg = img.clone();
+				vCap.release();
+				vCap = VideoCapture(device);
 			}
 			if (gotFace)
 			{
