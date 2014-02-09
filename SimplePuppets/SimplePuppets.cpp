@@ -79,7 +79,6 @@ Mat shape;
 Point features[66];
 Point initFeatures[66];
 bool gotContext;
-//GLFWwindow* window;
 int mainargc;
 char **mainargv;
 int GLWindowID;
@@ -199,7 +198,6 @@ void Project(Mat_<float>& dest, const Mat_<float>& mesh, Size size, double fx, d
 
 }
 
-// Move all of this to OpenGL?
 void DrawBox(Mat image, Vec6d pose, Scalar color, int thickness, float fx, float fy, float cx, float cy)
 {
 	float boxVerts[] = {-1, 1, -1,
@@ -305,6 +303,44 @@ GLuint matToTexture(cv::Mat &mat, GLenum minFilter, GLenum magFilter, GLenum wra
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapFilter);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mat.cols, mat.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, mat.ptr());
 	return textureID;
+}
+
+double distance(Point a, Point b)
+{
+	double x = a.x - b.x;
+	x *= x;
+	double y= a.y - b.y;
+	y *= y;
+	return sqrt(x+y);
+}
+
+Point rotate(Point a, Point b, double angle)//TODO
+{
+	Point c(b.x-a.x,b.y-a.y);
+	Mat rot(2, 2, CV_32F);
+	rot.at<double>(0,0) = cos(angle);
+	rot.at<double>(0,1) = sin(angle);
+	rot.at<double>(1,0) = -sin(angle);
+	rot.at<double>(1,1) = cos(angle);
+	c = c * rot;
+	c.x += a.x;
+	c.x += b.x;
+	return c;
+}
+
+void updateExtraPoints()//TODO
+{
+	//first, the points above the eyebrows (the first 10)
+	//get a scaling factor using the nose
+	double scaleFactor = distance(features[27], features[30])/distance(initFeatures[27], initFeatures[30]);
+	//and a rotation, again using the nose
+	double initAngle = atan(abs(initFeatures[27].y - initFeatures[30].y)/(initFeatures[27].x - initFeatures[30].x));//check this
+	double currentAngle = atan(abs(features[27].y - features[30].y)/(features[27].x - features[30].x));
+	double rotation = currentAngle - initAngle;
+	//for each point
+	//set its new position
+	//now the side points
+	//and finally the halfway-points
 }
 
 void doTransformation()
@@ -468,144 +504,108 @@ void doTransformation()
 
 void getExtraPoints(Mat edges)
 {
+	//we're going to want to triangulate the points
 	Rect r(0, 0, edges.cols, edges.rows);
-	cv::Subdiv2D subdiv(r);
-	//17 to 21: one eyebrow
-	//22 to 26: other eyebrow
-	//0-16: perimeter
-	for (int i = 17; i < 27; i++)//eyebrows
+	Subdiv2D subdiv(r);
+	//first, find the points to include
+	for (int i = 17; i < 26; i++)//above the eyebrows
 	{
-		for (int j = 0; j <= features[i].y; j++)
+		for (int j = 0; j <= features[i].y; j++)//moving down from the top of the image
 		{
-			if (edges.at<uchar>(Point(features[i].x, j)) != 0)
+			if (edges.at<uchar>(Point(features[i].x, j)) != 0)//if we have an edge, record it and stop looking
 			{
-				extraPoints.push_back(Point(i, j));
-				subdiv.insert(Point(i,j));
-				subdiv.insert(features[i]);
+				extraPoints.push_back(Point(features[i].x, j));
+				subdiv.insert(Point(features[i].x, j));
 				break;
 			}
 		}
 	}
-	for (int i = 0; i <= features[17].x; i++)//side points out from the eyebrows
+	//then to the side
+	for (int i = 0; i <= features[17].x; i++)//from the left end inwards
 	{
-		if (edges.at<uchar>(Point(i, features[17].y)) != 0)
+		if (edges.at<uchar>(Point(i, features[17].y)) != 0)//again, if we have an edge, record it and stop
 		{
 			extraPoints.push_back(Point(i, features[17].y));
 			subdiv.insert(Point(i, features[17].y));
-			subdiv.insert(features[17]);
 			break;
 		}
 	}
-	for (int i = edges.cols - 1; i >= features[26].x; i--)//
+	for (int i = edges.cols - 1; i >= features[26].x; i--)//this time from the right inwards
 	{
-		if (edges.at<uchar>(Point(i, features[26].y)) != 0)
+		if (edges.at<uchar>(Point(i, features[26].y)) != 0)//record and stop on the first edge
 		{
 			extraPoints.push_back(Point(i, features[26].y));
 			subdiv.insert(Point(i, features[26].y));
-			subdiv.insert(features[26]);
 			break;
 		}
 	}
-	for (int i = edges.rows - 1; i >= 0; i--)//halfway between the side points and the points above the outside of the eyebrows
+	//and, to make it cleaner, two "halfway" points
+	int xPos = cvRound((extraPoints[extraPoints.size() - 2].x + features[17].x) / 2);//halfway between the outer eyebrow point and the side point
+	for (int i = 0; i <= features[17].y; i++)//from the top
 	{
-		if (edges.at<uchar>(Point(cvRound((features[0].x+features[17].x)/2), i)) != 0)
+		if (edges.at<uchar>(Point(xPos, i)) != 0)//if we find an edge, record it and stop looking
 		{
-			extraPoints.push_back(Point(cvRound((features[0].x+features[17].x)/2), i));
-			subdiv.insert(Point(cvRound((features[0].x+features[17].x)/2), i));
-			subdiv.insert(features[17]);
+			extraPoints.push_back(Point(xPos, i));
+			subdiv.insert(Point(xPos, i));
 			break;
 		}
 	}
-	for (int i = edges.rows - 1; i >= 0; i--)
+	xPos = cvRound((extraPoints[extraPoints.size() - 2].x + features[17].x) / 2);
+	for (int i = 0; i <= features[26].y; i++)
 	{
-		if (edges.at<uchar>(Point(cvRound((features[16].x+features[26].x)/2), i)) != 0)
+		if (edges.at<uchar>(Point(xPos, i)) != 0)
 		{
-			extraPoints.push_back(Point(cvRound((features[16].x+features[26].x)/2), i));
-			subdiv.insert(Point(cvRound((features[16].x+features[26].x)/2), i));
-			subdiv.insert(features[26]);
+			extraPoints.push_back(Point(xPos, i));
+			subdiv.insert(Point(xPos, i));
 			break;
 		}
 	}
-	vector<Vec6f> triList;
-	subdiv.getTriangleList(triList);
-	for (int z = 0; z < triList.size(); z++)
+
+	vector<Vec6f> trianglelist;//we can now get a triangulation
+	subdiv.getTriangleList(trianglelist);
+	//here comes the faff - we need to establish "which" points we're talking about in the triangles
+	for (int i = 0; i < trianglelist.size(); i++)//for each triangle
 	{
-		bool use = true;
 		vector<vector<int>> current;
-		Vec6f triangle = triList[z];
-		for (int j = 0; j < 3; j++)
+		for (int j = 0; j < extraPoints.size() - 4; j++)//test the first 10 of the extras with the eyebrows
 		{
-			if (triangle[2*j] < 0 || triangle[2*j] >= edges.cols || triangle[(2*j)+1] < 0 || triangle[(2*j)+1] >= edges.rows)
+			for (int k = 0; k < 3; k++)//for each member point
 			{
-				use = false;
-			}
-		}
-		if (use)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				for (int i = 0; i < extraPoints.size(); i++)
+				if (trianglelist[i][2*k] == extraPoints[j].x && trianglelist[i][(2*k)+1] == extraPoints[j].y)
 				{
-					if (triangle[0] == extraPoints[i].x && triangle[1] == extraPoints[i].y)
-					{
-						vector<int> point;
-						point.push_back(0);
-						point.push_back(i);
-						current.push_back(point);
-					}
-					if (triangle[2] == extraPoints[i].x && triangle[3] == extraPoints[i].y)
-					{
-						vector<int> point;
-						point.push_back(0);
-						point.push_back(i);
-						current.push_back(point);
-					}
-					if (triangle[4] == extraPoints[i].x && triangle[5] == extraPoints[i].y)
-					{
-						vector<int> point;
-						point.push_back(0);
-						point.push_back(i);
-						current.push_back(point);
-					}
+					vector<int> point;
+					point.push_back(1);
+					point.push_back(j);
+					current.push_back(point);
 				}
-				for (int i = 17; i <= 26; i++)
+				if (trianglelist[i][2*k] == features[17+j].x && trianglelist[i][(2*k)+1] == features[17+j].y)
 				{
-					if (triangle[0] == features[i].x && triangle[1] == features[i].y)
-					{
-						vector<int> point;
-						point.push_back(1);
-						point.push_back(i);
-						current.push_back(point);
-					}
-					if (triangle[2] == features[i].x && triangle[3] == features[i].y)
-					{
-						vector<int> point;
-						point.push_back(1);
-						point.push_back(i);
-						current.push_back(point);
-					}
-					if (triangle[4] == features[i].x && triangle[5] == features[i].y)
-					{
-						vector<int> point;
-						point.push_back(1);
-						point.push_back(i);
-						current.push_back(point);
-					}
-				}
-				if (current.size() == 3)
-				{
-					extraMembers.push_back(current);
-					break;
+					vector<int> point;
+					point.push_back(0);
+					point.push_back(j);
+					current.push_back(point);
 				}
 			}
 		}
+		for (int j = extraPoints.size() - 4; j < extraPoints.size(); j++)
+		{
+			for (int k = 0; k < 3; k++)
+			{
+				if (trianglelist[i][2*k] == extraPoints[j].x && trianglelist[i][(2*k)+1] == extraPoints[j].y)
+				{
+					vector<int> point;
+					point.push_back(1);
+					point.push_back(j);
+					current.push_back(point);
+				}
+			}
+		}
+		
+		if (current.size() == 3)//cv implementation of delaunay includes points outside the image - we won't match them so we filter out affected triangles here
+		{
+			extraMembers.push_back(current);
+		}
 	}
-	Mat points(edges.rows, edges.cols, initImg.type());
-	for (int i = 0; i < extraPoints.size(); i++)
-	{
-		cv::circle(points, extraPoints[i], 2, Scalar(0,0,255));
-	}
-	imshow("Extra Points", points);
 }
 
 void extractFace(Mat img)
