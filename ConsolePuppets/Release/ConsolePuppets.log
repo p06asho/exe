@@ -1,5 +1,5 @@
-﻿Build started 05/02/2014 19:46:01.
-     1>Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\ConsolePuppets\ConsolePuppets.vcxproj" on node 2 (build target(s)).
+﻿Build started 09/02/2014 23:33:20.
+     1>Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\ConsolePuppets\ConsolePuppets.vcxproj" on node 3 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Release\ConsolePuppets.unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
@@ -22,4 +22,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.12
+Time Elapsed 00:00:00.72

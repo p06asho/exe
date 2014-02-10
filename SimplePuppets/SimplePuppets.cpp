@@ -90,6 +90,7 @@ Mat background;
 vector<Point> extraPoints;
 vector<Point> extraUpdated;
 vector<vector<vector<int>>> extraMembers;
+Mat extras;
 
 
 
@@ -305,7 +306,7 @@ GLuint matToTexture(cv::Mat &mat, GLenum minFilter, GLenum magFilter, GLenum wra
 	return textureID;
 }
 
-double distance(Point a, Point b)
+double Distance(Point a, Point b)
 {
 	double x = a.x - b.x;
 	x *= x;
@@ -314,33 +315,100 @@ double distance(Point a, Point b)
 	return sqrt(x+y);
 }
 
-Point rotate(Point a, Point b, double angle)//TODO
+Point rotate(Point a, Point b, double angle)//rotate b around a through angle
 {
-	Point c(b.x-a.x,b.y-a.y);
+	if (angle == 0)
+	{
+		return b;
+	}
+	Mat newPoint(1, 2, CV_32F);
 	Mat rot(2, 2, CV_32F);
 	rot.at<double>(0,0) = cos(angle);
 	rot.at<double>(0,1) = sin(angle);
 	rot.at<double>(1,0) = -sin(angle);
 	rot.at<double>(1,1) = cos(angle);
-	c = c * rot;
+	newPoint = newPoint * rot;
+	Point c(cvRound(newPoint.at<double>(Point(0,0))), cvRound(newPoint.at<double>(Point(1, 0))));
 	c.x += a.x;
 	c.x += b.x;
 	return c;
 }
 
-void updateExtraPoints()//TODO
+void updateExtraPoints()
 {
+	if (extraUpdated.size() != extraPoints.size())
+	{
+		extraUpdated = extraPoints;
+	}
 	//first, the points above the eyebrows (the first 10)
 	//get a scaling factor using the nose
-	double scaleFactor = distance(features[27], features[30])/distance(initFeatures[27], initFeatures[30]);
+	double scaleFactor = Distance(features[27], features[30])/Distance(initFeatures[27], initFeatures[30]);
 	//and a rotation, again using the nose
-	double initAngle = atan(abs(initFeatures[27].y - initFeatures[30].y)/(initFeatures[27].x - initFeatures[30].x));//check this
-	double currentAngle = atan(abs(features[27].y - features[30].y)/(features[27].x - features[30].x));
+	bool initAngleZero = false;
+	double initAngle = 0;
+	double currentAngle = 0;
+	if (initFeatures[27].x - initFeatures[30].x != 0)
+	{
+		double initRatio = (initFeatures[27].y - initFeatures[30].y)/(initFeatures[27].x - initFeatures[30].x);
+		initAngle = atan(initRatio);
+	}
+	else
+	{
+		initAngleZero = true;
+	}
+	bool angleZero = false;
+	if (features[27].x - features[30].x != 0)
+	{
+		double ratio = (features[27].y - features[30].y)/(features[27].x - features[30].x);
+		currentAngle = atan(ratio);
+	}
+	else
+	{
+		angleZero = true;
+	}
 	double rotation = currentAngle - initAngle;
-	//for each point
-	//set its new position
+	for (int i = 0; i < extraPoints.size() - 4; i++)//for each point
+	{
+		double new_Y = initFeatures[17+i].y - scaleFactor*(initFeatures[17+i].y - extraPoints[i].y);//first scale
+		Point newPoint = rotate(initFeatures[17+i], Point(extraPoints[i].x, cvRound(new_Y)), rotation);//then rotate
+		newPoint.x += (features[17+i].x - initFeatures[17+i].x);//then translate
+		newPoint.y += (features[17+i].y - initFeatures[17+i].y);
+		extraUpdated[i] = newPoint;//and set its new position
+	}
 	//now the side points
-	//and finally the halfway-points
+	scaleFactor = Distance(features[17], features[21])/Distance(initFeatures[17], initFeatures[21]);
+	double new_X = features[17+extraPoints.size() - 4].x - scaleFactor*(initFeatures[17+extraPoints.size() - 4].x - extraPoints[extraPoints.size() - 4].x);
+	Point newPoint = rotate(initFeatures[17+extraPoints.size() - 4], Point(new_X,extraPoints[extraPoints.size() - 4].y), rotation);
+	newPoint.x += (features[17+extraPoints.size() - 4].x - initFeatures[17+extraPoints.size() - 4].x);
+	newPoint.y += (features[17+extraPoints.size() - 4].y - initFeatures[17+extraPoints.size() - 4].y);
+	extraUpdated[extraPoints.size() - 4] = newPoint;
+
+	new_X = features[17+extraPoints.size() - 4].x - scaleFactor*(initFeatures[17+extraPoints.size() - 4].x - extraPoints[extraPoints.size() - 2].x);
+	newPoint = rotate(initFeatures[17+extraPoints.size() - 4], Point(new_X,extraPoints[extraPoints.size() - 4].y), rotation);
+	newPoint.x += (features[17+extraPoints.size() - 4].x - initFeatures[17+extraPoints.size() - 4].x);
+	newPoint.y += (features[17+extraPoints.size() - 4].y - initFeatures[17+extraPoints.size() - 4].y);
+	extraUpdated[extraPoints.size() - 2] = newPoint;
+
+	scaleFactor = Distance(features[22], features[26])/Distance(initFeatures[22], initFeatures[26]);
+	new_X = features[17+extraPoints.size() - 3].x - scaleFactor*(initFeatures[17+extraPoints.size() - 3].x - extraPoints[extraPoints.size() - 3].x);
+	newPoint = rotate(initFeatures[17+extraPoints.size() - 3], Point(new_X,extraPoints[extraPoints.size() - 3].y), rotation);
+	newPoint.x += (features[17+extraPoints.size() - 3].x - initFeatures[17+extraPoints.size() - 3].x);
+	newPoint.y += (features[17+extraPoints.size() - 3].y - initFeatures[17+extraPoints.size() - 3].y);
+
+	new_X = features[17+extraPoints.size() - 3].x - scaleFactor*(initFeatures[17+extraPoints.size() - 3].x - extraPoints[extraPoints.size() - 1].x);
+	newPoint = rotate(initFeatures[17+extraPoints.size() - 3], Point(new_X,extraPoints[extraPoints.size() - 3].y), rotation);
+	newPoint.x += (features[17+extraPoints.size() - 3].x - initFeatures[17+extraPoints.size() - 3].x);
+	newPoint.y += (features[17+extraPoints.size() - 3].y - initFeatures[17+extraPoints.size() - 3].y);
+	extraUpdated[extraPoints.size() - 1] = newPoint;
+	for (int i = 0; i < extraUpdated.size(); i++)
+	{
+		circle(extras, extraUpdated[i], 1, Scalar(255, 255, 255));
+	}
+	imshow("edges", extras);
+	for (int i = 0; i < extraUpdated.size(); i++)
+	{
+		circle(extras, extraUpdated[i], 1, Scalar(0, 0, 0));
+	}
 }
 
 void doTransformation()
@@ -429,77 +497,10 @@ void doTransformation()
 			glEnd();
 		}
 	}
-	//calculate a size change to use with the extra points
-	//double yScaleFactor = ((features[30].y - features[27].y)/(initFeatures[30].y - initFeatures[27].y));//universal y scale based on points on the nose which should be fixed in relation to each other
-	//for (int i = 0; i < 10; i++)
-	//{
-//		double newdistance = extraPoints[i].y - initFeatures[i+17].y;
-		//newdistance = abs(newdistance);
-		//newdistance *= yScaleFactor;
-		//new x position based on (for points above the eyebrows) that of the eyebrow points and (for points to the side) the changed x distance between eyebrow points
-		//first 10 points are above the eyebrows
-		//Point newPos(features[17+i].x, 
-			//cvRound(features[17+i].y - newdistance));
-		//extraUpdated.push_back(newPos);
-		//then two side points
-		//then two halfway points
-	//}
-	//double xScaleFactor = ((features[17].x - features[21].x)/(initFeatures[17].x - initFeatures[21].x));
-	//for (int i = 10; i < 12; i++)
-	//{
-//		Point newPos(cvRound(extraPoints[i].x*xScaleFactor), 
-			//cvRound(extraPoints[i].y*yScaleFactor));
-		//extraUpdated.push_back(newPos);
-	//}
-	//xScaleFactor = ((features[22].x - features[26].x)/(initFeatures[22].x - initFeatures[26].x));
-	//for (int i = 12; i < 14; i++)
-	//{
-//		Point newPos(cvRound(extraPoints[i].x*xScaleFactor), 
-			//cvRound(extraPoints[i].y*yScaleFactor));
-		//extraUpdated.push_back(newPos);
-	//}
-	//for (int i = 0; i < extraMembers.size(); i++)
-	//{
-//		glBegin(GL_TRIANGLES);
-			//for (int j = 0; j < 3; j++)
-			//{
-//				if (extraMembers[i][j][0] == 0)//we're dealing with an extraMembers point
-				//{
-//					glTexCoord2f(extraPoints[extraMembers[i][j][1]].x/640.0,
-						//1.0 - extraPoints[extraMembers[i][j][1]].y/480.0);
-					//glVertex2d((extraUpdated[extraMembers[i][j][1]].x/320.0)-1.0,
-//						1.0 - (extraUpdated[extraMembers[i][j][1]].y/240.0));
-//					
-				//}
-				//else//we're dealing with an initFeatures point
-				//{
-//					glTexCoord2f(initFeatures[trianglemembers[i][j]].x/640.0,
-						//1.0 - initFeatures[trianglemembers[i][j]].y/480.0);
-					//glVertex2d((features[trianglemembers[i][j]].x/320.0)-1.0,
-//						1.0 - (features[trianglemembers[i][j]].y/240.0));
-				//}
-			//}
-		//glEnd();
-	//}
-	/*glBegin(GL_TRIANGLES);//TODO
-		//loop the perimeter
-		for (int i = 0; i < 17; i++)
-		{
-			//if i mod 2 is 0, draw with two perimeter points and an extreme point
-			if (i % 2 = 0)
-			{
-				glTexCoord2f(
-			}
-			else
-			{
-
-			}
-			//otherwise 1 and 2. 
-		}
-	glEnd()*/
 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glutSwapBuffers();
+	updateExtraPoints();
 }
 
 void getExtraPoints(Mat edges)
@@ -508,7 +509,7 @@ void getExtraPoints(Mat edges)
 	Rect r(0, 0, edges.cols, edges.rows);
 	Subdiv2D subdiv(r);
 	//first, find the points to include
-	for (int i = 17; i < 26; i++)//above the eyebrows
+	for (int i = 17; i <= 26; i++)//above the eyebrows
 	{
 		for (int j = 0; j <= features[i].y; j++)//moving down from the top of the image
 		{
@@ -550,7 +551,7 @@ void getExtraPoints(Mat edges)
 			break;
 		}
 	}
-	xPos = cvRound((extraPoints[extraPoints.size() - 2].x + features[17].x) / 2);
+	xPos = cvRound((extraPoints[extraPoints.size() - 2].x + features[26].x) / 2);
 	for (int i = 0; i <= features[26].y; i++)
 	{
 		if (edges.at<uchar>(Point(xPos, i)) != 0)
@@ -606,6 +607,7 @@ void getExtraPoints(Mat edges)
 			extraMembers.push_back(current);
 		}
 	}
+	extras = Mat(edges.rows, edges.cols, CV_32F);
 }
 
 void extractFace(Mat img)
@@ -681,7 +683,7 @@ void extractFace(Mat img)
 	namedWindow("edges", 1);
 	imshow("edges", edges);
 	gotFace = true;//Don't do it every frame
-	//getExtraPoints(edges);
+	getExtraPoints(edges);
 }
 
 void doFaceTracking(int argc, char **argv){
