@@ -390,6 +390,25 @@ double getTheta(Point a, Point b)//Point a should be the top of the nose bridge,
 	return angle;
 }
 
+void doInpainting(Mat img)
+{
+	Mat mask(img.rows, img.cols, CV_8U);
+	Mat inpainted = img.clone();
+	Point perimeter[31];
+	for (int i = 0; i < 17; i++)
+	{
+		perimeter[i] = initFeatures[i];
+	}
+	for (int i = 0; i < 14; i++)
+	{
+		perimeter[i+17] = extraPoints[13-i];
+	}
+	fillConvexPoly(mask, perimeter, 31, 255);
+	inpaint(img, mask, inpainted, 5, INPAINT_NS);
+	imshow("mask", mask);
+	imshow("inpainted", inpainted);
+}
+
 void updateExtraPoints()
 {
 	if (extraUpdated.size() != extraPoints.size())
@@ -595,6 +614,7 @@ void extractFace(Mat img)
 	imshow("edges", edges);
 	gotFace = true;//Don't do it every frame
 	getExtraPoints(edges);
+	doInpainting(img);
 	getTriangulation(img);
 	Mat triangles = img.clone();
 	for (int i = 0; i < triangulation.size(); i++)
@@ -980,8 +1000,8 @@ void doFaceTracking(int argc, char **argv){
 			}
 			if (!gotFace)
 			{
-				extractFace(img);
 				initImg = img.clone();
+				extractFace(img);
 				vCap.release();
 				vCap = VideoCapture(device);
 			}
