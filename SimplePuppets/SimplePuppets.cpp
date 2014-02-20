@@ -89,6 +89,7 @@ Mat background;
 vector<Point> extraPoints;
 vector<Point> extraUpdated;
 vector<vector<vector<int>>> triangulation;
+vector<vector<int>> lips;
 
 
 
@@ -390,22 +391,38 @@ double getTheta(Point a, Point b)//Point a should be the top of the nose bridge,
 	return angle;
 }
 
+Point getCentre(Point f[])
+{
+	int xsum = 0;
+	int ysum = 0;
+	for (int i = 0; i < 66; i++)
+	{
+		xsum += f[i].x;
+		ysum += f[i].y;
+	}
+	xsum = xsum/66;
+	ysum = ysum/66;
+	return Point(xsum, ysum);
+}
+
 void doInpainting(Mat img)
 {
-	Mat mask(img.rows, img.cols, CV_8U);
+	Mat mask(img.rows, img.cols, CV_8U, cvScalar(0));
 	Mat inpainted = img.clone();
-	Point perimeter[31];
-	for (int i = 0; i < 17; i++)
+	vector<Point> allPoints;
+	vector<Point> hull;
+	for (int i = 0; i < 66; i++)
 	{
-		perimeter[i] = initFeatures[i];
+		allPoints.push_back(initFeatures[i]);
 	}
-	for (int i = 0; i < 14; i++)
+	for (int i = 0; i < extraPoints.size(); i++)
 	{
-		perimeter[i+17] = extraPoints[13-i];
+		allPoints.push_back(extraPoints[i]);
 	}
-	fillConvexPoly(mask, perimeter, 31, 255);
-	inpaint(img, mask, inpainted, 5, INPAINT_NS);
+	convexHull(allPoints, hull);
+	fillConvexPoly(mask, hull, hull.size(), 255);
 	imshow("mask", mask);
+	inpaint(img, mask, inpainted, 5, INPAINT_TELEA);
 	imshow("inpainted", inpainted);
 }
 
@@ -432,19 +449,19 @@ void updateExtraPoints()
 	//these are not directly along an axis from a feature - they need proper scaling
 	double xScaleFactor = Distance(features[0], features[17])/Distance(initFeatures[0], initFeatures[17]);
 	int newX = cvRound(xScaleFactor*(extraPoints[10].x-initFeatures[17].x));
-	int newY = cvRound(scaleFactor*(extraPoints[10].y-initFeatures[17].y));
-	Point pos = rotatePoint(Point(0,0), Point(newX, newY), rotation);
+//	int newY = cvRound(scaleFactor*(extraPoints[10].y-initFeatures[17].y));
+	Point pos = rotatePoint(Point(0,0), Point(newX, 0), rotation);
 	extraUpdated[10] = Point(features[17].x+pos.x, features[17].y+pos.y);
 
-	newX = cvRound(xScaleFactor*(extraPoints[12].x-initFeatures[17].x));//clamp x to halfway again instead of this
-	newY = cvRound(scaleFactor*(extraPoints[12].y-initFeatures[17].y));
+	newX = cvRound(xScaleFactor*(extraPoints[12].x-initFeatures[17].x));
+	int newY = cvRound(scaleFactor*(extraPoints[12].y-initFeatures[17].y));
 	pos = rotatePoint(Point(0,0), Point(newX, newY), rotation);
 	extraUpdated[12] = Point(features[17].x+pos.x, features[17].y+pos.y);
 
-	scaleFactor = Distance(features[16], features[26])/Distance(initFeatures[16], initFeatures[26]);
+	xScaleFactor = Distance(features[16], features[26])/Distance(initFeatures[16], initFeatures[26]);
 	newX = cvRound(xScaleFactor*(extraPoints[11].x-initFeatures[26].x));
-	newY = cvRound(scaleFactor*(extraPoints[11].y-initFeatures[26].y));
-	pos = rotatePoint(Point(0,0), Point(newX, newY), rotation);
+//	newY = cvRound(scaleFactor*(extraPoints[11].y-initFeatures[26].y));
+	pos = rotatePoint(Point(0,0), Point(newX, 0), rotation);
 	extraUpdated[11] = Point(features[26].x+pos.x, features[26].y+pos.y);
 
 	newX = cvRound(xScaleFactor*(extraPoints[13].x-initFeatures[26].x));//likewise
@@ -464,6 +481,47 @@ void updateExtraPoints()
 	}
 }
 
+void getLips()
+{
+	vector<int> tri;
+	tri.push_back(48);
+	tri.push_back(49);
+	tri.push_back(60);
+	lips.push_back(tri);
+	tri[0] = 50;
+	lips.push_back(tri);
+	tri[1] = 61;
+	lips.push_back(tri);
+	tri[2] = 51;
+	lips.push_back(tri);
+	tri[0] = 62;
+	lips.push_back(tri);
+	tri[1] = 52;
+	lips.push_back(tri);
+	tri[2] = 53;
+	lips.push_back(tri);
+	tri[1] = 54;
+	lips.push_back(tri);
+	tri[0] = 48;
+	tri[1] = 65;
+	tri[2] = 59;
+	lips.push_back(tri);
+	tri[0] = 58;
+	lips.push_back(tri);
+	tri[2] = 64;
+	lips.push_back(tri);
+	tri[1] = 57;
+	lips.push_back(tri);
+	tri[0] = 63;
+	lips.push_back(tri);
+	tri[2] = 56;
+	lips.push_back(tri);
+	tri[1] = 55;
+	lips.push_back(tri);
+	tri[2] = 54;
+	lips.push_back(tri);
+}
+
 void doTransformation()
 {
 	//Don't get new triangulations every time. Use the original set of triangles, and apply it like a texture
@@ -478,6 +536,7 @@ void doTransformation()
 		Mat flipped;
 		flip(initImg, flipped, 0);
 		textureID = matToTexture(flipped, GL_NEAREST, GL_NEAREST, GL_CLAMP);
+		getLips();
 		//flip(initImg, background, 0);
 		//fillConvexPoly(background, perimeter, 27, Scalar(0));
 		//backgroundID = matToTexture(background, GL_NEAREST, GL_NEAREST, GL_CLAMP);
@@ -499,22 +558,24 @@ void doTransformation()
 	for (int i = 0; i < triangulation.size(); i++)
 	{
 		bool draw = true;
-		if ((features[61].y - features[64].y) < -3 || (features[61].y - features[64].y) > 3)//only start leaving the gap if we're sure the mouth is open
+		bool bottom = false;
+		bool top = false;
+		for (int a = 0; a < 3; a++)//check whether the triangle covers the area between the lips
 		{
-			bool top = false;
-			bool bottom = false;
-			for (int a = 0; a < 3; a++)//check whether the triangle covers the area between the lips
+			if (triangulation[i][a][1] >= 60)
 			{
-				if (triangulation[i][a][1] >= 60 && triangulation[i][a][1] <= 62 && triangulation[i][a][0] == 0)
-				{
-					top = true;
-				}
-				if (triangulation[i][a][1] > 62 && triangulation[i][a][0] == 0)
-				{
-					bottom = true;
-				}
+				draw = false;
+				break;
 			}
-			if (top && bottom)//if it does, don't draw it!
+			if (triangulation[i][a][1] > 48 && triangulation[i][a][1] < 52)
+			{
+				top = true;
+			}
+			if (triangulation[i][a][1] > 52 && triangulation[i][a][1] < 60)
+			{
+				bottom = true;
+			}
+			if (top && bottom)
 			{
 				draw = false;
 			}
@@ -541,6 +602,18 @@ void doTransformation()
 				}
 			glEnd();
 		}
+	}
+	for (int i = 0; i < lips.size(); i++)
+	{
+		glBegin(GL_TRIANGLES);
+			for (int j = 0; j < 3; j++)
+			{
+				glTexCoord2f(initFeatures[lips[i][j]].x/640.0, 
+					1.0 - initFeatures[lips[i][j]].y/480.0);
+				glVertex2d((features[lips[i][j]].x/320.0) - 1.0, 
+					1.0 - (features[lips[i][j]].y/240.0));
+			}
+		glEnd();
 	}
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glutSwapBuffers();
@@ -596,6 +669,36 @@ void getExtraPoints(Mat edges)
 			break;
 		}
 	}
+	for (int i = 0; i < 3; i++)//this may not be a good idea - it might cause bad behaviour with triangles and hulls
+	{							//Yes. You can add logic to ignore the Point(-1,-1) bits. 
+		for (int j = 0; j < features[i].x; j++)
+		{
+			if (edges.at<uchar>(Point(j, features[i].y)) != 0)
+			{
+				extraPoints.push_back(Point(j, features[i].y));
+				break;
+			}
+		}
+		if (extraPoints.size() < 14 + i + 1)
+		{
+			extraPoints.push_back(Point(-1,-1));
+		}
+	}
+	for (int i = 16; i > 13; i--)
+	{
+		for (int j = edges.cols; j >= features[i].x; j--)
+		{
+			if (edges.at<uchar>(Point(j, features[i].y)) != 0)
+			{
+				extraPoints.push_back(Point(j, features[i].y));
+				break;
+			}
+		}
+		if (extraPoints.size() < 17 + i + 1)
+		{
+			extraPoints.push_back(Point(-1,-1));
+		}
+	}
 }
 
 void extractFace(Mat img)
@@ -625,6 +728,7 @@ void extractFace(Mat img)
 	}
 	namedWindow("triangles", 1);
 	imshow("triangles", triangles);
+	imwrite("Z:\\triangles.jpg", triangles);
 }
 
 void doFaceTracking(int argc, char **argv){
