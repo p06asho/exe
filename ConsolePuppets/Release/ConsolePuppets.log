@@ -1,4 +1,4 @@
-﻿Build started 20/02/2014 11:50:51.
+﻿Build started 21/02/2014 17:23:36.
      1>Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\ConsolePuppets\ConsolePuppets.vcxproj" on node 3 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Release\ConsolePuppets.unsuccessfulbuild" because "AlwaysCreate" was specified.
@@ -12,8 +12,6 @@
          xcopy /I /E /Y /D /C "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\GTK+\bin" "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\"
          xcopy /I /E /Y /D /C "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\videos\default.wmv" "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\"
          :VCEnd
-         Sharing violation
-         Unable to create directory - Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\include
          0 File(s) copied
          0 File(s) copied
          0 File(s) copied
@@ -24,4 +22,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.26
+Time Elapsed 00:00:01.27

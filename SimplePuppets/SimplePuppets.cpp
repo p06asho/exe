@@ -324,7 +324,10 @@ void getTriangulation(Mat img)
 	}
 	for (int i = 0; i < extraPoints.size(); i++)
 	{
-		subdiv.insert(extraPoints[i]);
+		if (extraPoints[i] != Point(-1,-1))
+		{
+			subdiv.insert(extraPoints[i]);
+		}
 	}
 	vector<Vec6f> triangles;
 	subdiv.getTriangleList(triangles);
@@ -417,11 +420,14 @@ void doInpainting(Mat img)
 	}
 	for (int i = 0; i < extraPoints.size(); i++)
 	{
-		allPoints.push_back(extraPoints[i]);
+		if (extraPoints[i] != Point(-1,-1))
+		{
+			allPoints.push_back(extraPoints[i]);
+		}
 	}
 	convexHull(allPoints, hull);
 	fillConvexPoly(mask, hull, hull.size(), 255);
-	imshow("mask", mask);
+	dilate(mask, mask, Mat(), Point(-1,-1), 20);
 	inpaint(img, mask, inpainted, 5, INPAINT_TELEA);
 	imshow("inpainted", inpainted);
 }
@@ -458,6 +464,17 @@ void updateExtraPoints()
 	pos = rotatePoint(Point(0,0), Point(newX, newY), rotation);
 	extraUpdated[12] = Point(features[17].x+pos.x, features[17].y+pos.y);
 
+	//left ear
+	for (int i = 0; i < 3; i++)
+	{
+		if (extraPoints[14+i] != Point(-1,-1))
+		{
+			newX = cvRound(xScaleFactor*(extraPoints[14+i].x - initFeatures[i].x));
+			pos = rotatePoint(Point(0,0), Point(newX,0),rotation);
+			extraUpdated[14+i] = Point(features[i].x+pos.x, features[i].y+pos.y);
+		}
+	}
+
 	xScaleFactor = Distance(features[16], features[26])/Distance(initFeatures[16], initFeatures[26]);
 	newX = cvRound(xScaleFactor*(extraPoints[11].x-initFeatures[26].x));
 //	newY = cvRound(scaleFactor*(extraPoints[11].y-initFeatures[26].y));
@@ -468,6 +485,17 @@ void updateExtraPoints()
 	newY = cvRound(scaleFactor*(extraPoints[13].y-initFeatures[26].y));
 	pos = rotatePoint(Point(0,0), Point(newX, newY), rotation);
 	extraUpdated[13] = Point(features[26].x+pos.x, features[26].y+pos.y);
+
+	//right ear
+	for (int i = 0; i < 3; i++)
+	{
+		if (extraPoints[17+i] != Point(-1,-1))
+		{
+			newX = cvRound(xScaleFactor*(extraPoints[17+i].x - initFeatures[16-i].x));
+			pos = rotatePoint(Point(0,0), Point(newX, 0), rotation);
+			extraUpdated[17+i] = Point(features[16-i].x+pos.x,features[16-i].y+pos.y);
+		}
+	}
 
 	Mat extras(480, 640, CV_32F);
 	for (int i = 0; i < extraUpdated.size(); i++)
