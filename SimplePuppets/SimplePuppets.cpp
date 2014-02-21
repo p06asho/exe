@@ -82,8 +82,7 @@ bool gotContext;
 int mainargc;
 char **mainargv;
 int GLWindowID;
-GLuint textureID;
-GLuint backgroundID;
+GLuint textures[2];
 Mat initImg;
 Mat background;
 vector<Point> extraPoints;
@@ -293,16 +292,25 @@ vector<string> get_arguments(int argc, char **argv)
 	return arguments;
 }
 
-GLuint matToTexture(cv::Mat &mat, GLenum minFilter, GLenum magFilter, GLenum wrapFilter)
+void matToTexture(GLenum minFilter, GLenum magFilter, GLenum wrapFilter)
 {
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_2D, textureID);
+	Mat flipped;
+	flip(initImg, flipped, 0);
+	Mat backFlipped;
+	flip(background, backFlipped, 0);
+	glGenTextures(2, textures);
+	glBindTexture(GL_TEXTURE_2D, textures[0]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapFilter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapFilter);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mat.cols, mat.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, mat.ptr());
-	return textureID;
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, flipped.cols, flipped.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, flipped.ptr());
+	glBindTexture(GL_TEXTURE_2D, textures[1]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapFilter);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, backFlipped.cols, backFlipped.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, backFlipped.ptr());
 }
 
 double Distance(Point a, Point b)
@@ -429,7 +437,7 @@ void doInpainting(Mat img)
 	fillConvexPoly(mask, hull, hull.size(), 255);
 	dilate(mask, mask, Mat(), Point(-1,-1), 20);
 	inpaint(img, mask, inpainted, 5, INPAINT_TELEA);
-	imshow("inpainted", inpainted);
+	background = inpainted;
 }
 
 void updateExtraPoints()
@@ -555,34 +563,28 @@ void doTransformation()
 	//Don't get new triangulations every time. Use the original set of triangles, and apply it like a texture
 	if (!gotContext)
 	{
-		background = initImg.clone();
 		glutInitWindowSize(640, 480);
 		glutInitWindowPosition(0,0);
 		GLWindowID = glutCreateWindow("Output");
 		glutSetWindow(GLWindowID);
 		gotContext = true;
-		Mat flipped;
-		flip(initImg, flipped, 0);
-		textureID = matToTexture(flipped, GL_NEAREST, GL_NEAREST, GL_CLAMP);
+		matToTexture(GL_NEAREST, GL_NEAREST, GL_CLAMP);
 		getLips();
-		//flip(initImg, background, 0);
-		//fillConvexPoly(background, perimeter, 27, Scalar(0));
-		//backgroundID = matToTexture(background, GL_NEAREST, GL_NEAREST, GL_CLAMP);
 	}
 	
 	updateExtraPoints();
 	//Rendering stuff here. Remember to swap buffers each time. 
 	glClear(GL_COLOR_BUFFER_BIT);
 	glEnable(GL_TEXTURE_2D);
-	/*glBindTexture(GL_TEXTURE_2D, backgroundID);
+	glBindTexture(GL_TEXTURE_2D, textures[1]);
 	glBegin(GL_QUADS);
 		glTexCoord2f(0.0, 0.0); glVertex2d(-1.0, -1.0);
 		glTexCoord2f(0.0, 1.0); glVertex2d(-1.0, 1.0);
 		glTexCoord2f(1.0, 1.0); glVertex2d(1.0, 1.0);
 		glTexCoord2f(1.0, 0.0); glVertex2d(1.0, -1.0);
 	glEnd();
-	glDrawArrays(GL_QUADS, 0, 4);*/
-	glBindTexture(GL_TEXTURE_2D, textureID);
+	glDrawArrays(GL_QUADS, 0, 4);
+	glBindTexture(GL_TEXTURE_2D, textures[0]);
 	for (int i = 0; i < triangulation.size(); i++)
 	{
 		bool draw = true;
@@ -697,8 +699,8 @@ void getExtraPoints(Mat edges)
 			break;
 		}
 	}
-	for (int i = 0; i < 3; i++)//this may not be a good idea - it might cause bad behaviour with triangles and hulls
-	{							//Yes. You can add logic to ignore the Point(-1,-1) bits. 
+	for (int i = 0; i < 3; i++)
+	{							
 		for (int j = 0; j < features[i].x; j++)
 		{
 			if (edges.at<uchar>(Point(j, features[i].y)) != 0)
@@ -722,7 +724,7 @@ void getExtraPoints(Mat edges)
 				break;
 			}
 		}
-		if (extraPoints.size() < 17 + i + 1)
+		if (extraPoints.size() < 17 + (17-i))
 		{
 			extraPoints.push_back(Point(-1,-1));
 		}
