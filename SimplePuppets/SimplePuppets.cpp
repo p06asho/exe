@@ -82,14 +82,15 @@ bool gotContext;
 int mainargc;
 char **mainargv;
 int GLWindowID;
-GLuint textures[2];
+GLuint textures[3];
 Mat initImg;
 Mat background;
 vector<Point> extraPoints;
 vector<Point> extraUpdated;
 vector<vector<vector<int>>> triangulation;
 vector<vector<int>> lips;
-
+Mat mouth;
+VideoWriter videoOut;
 
 
 void use_webcam(){			//called when the 'use webcam' checkbox is ticked
@@ -292,13 +293,21 @@ vector<string> get_arguments(int argc, char **argv)
 	return arguments;
 }
 
+void writeFrame()
+{
+	Mat frame(initImg.rows, initImg.cols, initImg.type());
+	glReadPixels(0, 0, frame.cols, frame.rows, GL_BGR, GL_UNSIGNED_BYTE, frame.data);
+	flip(frame, frame, 0);
+	videoOut.write(frame);
+}
+
 void matToTexture(GLenum minFilter, GLenum magFilter, GLenum wrapFilter)
 {
 	Mat flipped;
 	flip(initImg, flipped, 0);
 	Mat backFlipped;
 	flip(background, backFlipped, 0);
-	glGenTextures(2, textures);
+	glGenTextures(3, textures);
 	glBindTexture(GL_TEXTURE_2D, textures[0]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
@@ -311,6 +320,14 @@ void matToTexture(GLenum minFilter, GLenum magFilter, GLenum wrapFilter)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapFilter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapFilter);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, backFlipped.cols, backFlipped.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, backFlipped.ptr());
+	glBindTexture(GL_TEXTURE_2D, textures[2]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapFilter);
+	Mat mouthFlipped;
+	flip(mouth, mouthFlipped, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mouthFlipped.cols, mouthFlipped.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, mouthFlipped.ptr());
 }
 
 double Distance(Point a, Point b)
@@ -460,16 +477,31 @@ void updateExtraPoints()
 		extraUpdated[i] = Point(features[17+i].x+pos.x, features[17+i].y+pos.y);
 	}
 	//now the side points
-	//these are not directly along an axis from a feature - they need proper scaling
+	//some of these are not directly along from a feature - they need proper scaling
 	double xScaleFactor = Distance(features[0], features[17])/Distance(initFeatures[0], initFeatures[17]);
 	int newX = cvRound(xScaleFactor*(extraPoints[10].x-initFeatures[17].x));
-//	int newY = cvRound(scaleFactor*(extraPoints[10].y-initFeatures[17].y));
-	Point pos = rotatePoint(Point(0,0), Point(newX, 0), rotation);
+	int newY = cvRound(scaleFactor*(extraPoints[10].y-extraPoints[14].y));
+	Point pos;
+	if (features[17].x > features[0].x)
+	{
+		pos = rotatePoint(Point(0,0), Point(newX, 0), rotation);
+	}
+	else
+	{
+		pos = rotatePoint(Point(0,0), Point(-newX, 0), rotation);
+	}
 	extraUpdated[10] = Point(features[17].x+pos.x, features[17].y+pos.y);
 
 	newX = cvRound(xScaleFactor*(extraPoints[12].x-initFeatures[17].x));
-	int newY = cvRound(scaleFactor*(extraPoints[12].y-initFeatures[17].y));
-	pos = rotatePoint(Point(0,0), Point(newX, newY), rotation);
+	newY = cvRound(scaleFactor*(extraPoints[12].y-initFeatures[17].y));
+	if (features[17].x > features[0].x)
+	{
+		pos = rotatePoint(Point(0,0), Point(newX, newY), rotation);
+	}
+	else
+	{
+		pos = rotatePoint(Point(0,0), Point(-newX, newY), rotation);
+	}
 	extraUpdated[12] = Point(features[17].x+pos.x, features[17].y+pos.y);
 
 	//left ear
@@ -485,13 +517,27 @@ void updateExtraPoints()
 
 	xScaleFactor = Distance(features[16], features[26])/Distance(initFeatures[16], initFeatures[26]);
 	newX = cvRound(xScaleFactor*(extraPoints[11].x-initFeatures[26].x));
-//	newY = cvRound(scaleFactor*(extraPoints[11].y-initFeatures[26].y));
-	pos = rotatePoint(Point(0,0), Point(newX, 0), rotation);
+	newY = cvRound(scaleFactor*(extraPoints[11].y-extraPoints[17].y));
+	if (features[16].x > features[25].x)
+	{
+		pos = rotatePoint(Point(0,0), Point(newX, 0), rotation);
+	}
+	else
+	{
+		pos = rotatePoint(Point(0,0), Point(-newX, 0), rotation);
+	}
 	extraUpdated[11] = Point(features[26].x+pos.x, features[26].y+pos.y);
 
-	newX = cvRound(xScaleFactor*(extraPoints[13].x-initFeatures[26].x));//likewise
+	newX = cvRound(xScaleFactor*(extraPoints[13].x-initFeatures[26].x));
 	newY = cvRound(scaleFactor*(extraPoints[13].y-initFeatures[26].y));
-	pos = rotatePoint(Point(0,0), Point(newX, newY), rotation);
+	if (features[16].x > features[26].x)
+	{
+		pos = rotatePoint(Point(0,0), Point(newX, newY), rotation);
+	}
+	else
+	{
+		pos = rotatePoint(Point(0,0), Point(-newX, newY), rotation);
+	}
 	extraUpdated[13] = Point(features[26].x+pos.x, features[26].y+pos.y);
 
 	//right ear
@@ -510,11 +556,29 @@ void updateExtraPoints()
 	{
 		circle(extras, extraUpdated[i], 1, Scalar(255,255,255));
 	}
+	circle(extras, extraUpdated[12], 2, Scalar(255,0,0));
 	imshow("extras", extras);
 	for (int i = 0; i < extraUpdated.size(); i++)
 	{
 		circle(extras, extraUpdated[i], 1, Scalar(0,0,0));
 	}
+}
+
+void getNeck()
+{
+	Mat kernel(3, 3, CV_8U);
+	Mat gray;
+	for (int i = 0; i < 3; i++)
+	{
+		kernel.at<uchar>(Point(0, i)) = -1;
+		kernel.at<uchar>(Point(1, i)) = 2;
+		kernel.at<uchar>(Point(2, i)) = -1;
+	}
+	Mat vertEdges;
+	cvtColor(initImg, gray, CV_BGR2GRAY);
+	filter2D(gray, gray, -1, kernel);
+	threshold(gray, vertEdges, 0, 255, THRESH_BINARY+THRESH_OTSU);
+	imshow("neck", vertEdges);
 }
 
 void getLips()
@@ -558,38 +622,100 @@ void getLips()
 	lips.push_back(tri);
 }
 
-void doTransformation()
+void drawMouth()
 {
-	//Don't get new triangulations every time. Use the original set of triangles, and apply it like a texture
-	if (!gotContext)
-	{
-		glutInitWindowSize(640, 480);
-		glutInitWindowPosition(0,0);
-		GLWindowID = glutCreateWindow("Output");
-		glutSetWindow(GLWindowID);
-		gotContext = true;
-		matToTexture(GL_NEAREST, GL_NEAREST, GL_CLAMP);
-		getLips();
-	}
-	
-	updateExtraPoints();
-	//Rendering stuff here. Remember to swap buffers each time. 
-	glClear(GL_COLOR_BUFFER_BIT);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, textures[1]);
-	glBegin(GL_QUADS);
-		glTexCoord2f(0.0, 0.0); glVertex2d(-1.0, -1.0);
-		glTexCoord2f(0.0, 1.0); glVertex2d(-1.0, 1.0);
-		glTexCoord2f(1.0, 1.0); glVertex2d(1.0, 1.0);
-		glTexCoord2f(1.0, 0.0); glVertex2d(1.0, -1.0);
+	glBindTexture(GL_TEXTURE_2D, textures[2]);
+	glBegin(GL_TRIANGLES);
+		glTexCoord2f(initFeatures[48].x/640.0, 
+			1.0 - initFeatures[48].y/480.0);
+		glVertex2d((features[48].x/320.0) - 1.0,
+			1.0 - (features[48].y/240.0));
+		glTexCoord2f(initFeatures[65].x/640.0, 
+			1.0 - initFeatures[65].y/480.0);
+		glVertex2d((features[65].x/320.0) - 1.0,
+			1.0 - (features[65].y/240.0));
+		glTexCoord2f(initFeatures[60].x/640.0, 
+			1.0 - initFeatures[60].y/480.0);
+		glVertex2d((features[60].x/320.0) - 1.0,
+			1.0 - (features[60].y/240.0));
+
+		glTexCoord2f(initFeatures[65].x/640.0, 
+			1.0 - initFeatures[65].y/480.0);
+		glVertex2d((features[65].x/320.0) - 1.0,
+			1.0 - (features[65].y/240.0));
+		glTexCoord2f(initFeatures[60].x/640.0, 
+			1.0 - initFeatures[60].y/480.0);
+		glVertex2d((features[60].x/320.0) - 1.0,
+			1.0 - (features[60].y/240.0));
+		glTexCoord2f(initFeatures[64].x/640.0, 
+			1.0 - initFeatures[64].y/480.0);
+		glVertex2d((features[64].x/320.0) - 1.0,
+			1.0 - (features[64].y/240.0));
+
+		glTexCoord2f(initFeatures[60].x/640.0, 
+			1.0 - initFeatures[60].y/480.0);
+		glVertex2d((features[60].x/320.0) - 1.0,
+			1.0 - (features[60].y/240.0));
+		glTexCoord2f(initFeatures[61].x/640.0, 
+			1.0 - initFeatures[61].y/480.0);
+		glVertex2d((features[61].x/320.0) - 1.0,
+			1.0 - (features[61].y/240.0));
+		glTexCoord2f(initFeatures[64].x/640.0, 
+			1.0 - initFeatures[64].y/480.0);
+		glVertex2d((features[64].x/320.0) - 1.0,
+			1.0 - (features[64].y/240.0));
+
+		glTexCoord2f(initFeatures[61].x/640.0, 
+			1.0 - initFeatures[61].y/480.0);
+		glVertex2d((features[61].x/320.0) - 1.0,
+			1.0 - (features[61].y/240.0));
+		glTexCoord2f(initFeatures[64].x/640.0, 
+			1.0 - initFeatures[64].y/480.0);
+		glVertex2d((features[64].x/320.0) - 1.0,
+			1.0 - (features[64].y/240.0));
+		glTexCoord2f(initFeatures[63].x/640.0, 
+			1.0 - initFeatures[63].y/480.0);
+		glVertex2d((features[63].x/320.0) - 1.0,
+			1.0 - (features[63].y/240.0));
+
+		glTexCoord2f(initFeatures[61].x/640.0, 
+			1.0 - initFeatures[61].y/480.0);
+		glVertex2d((features[61].x/320.0) - 1.0,
+			1.0 - (features[61].y/240.0));
+		glTexCoord2f(initFeatures[62].x/640.0, 
+			1.0 - initFeatures[62].y/480.0);
+		glVertex2d((features[62].x/320.0) - 1.0,
+			1.0 - (features[62].y/240.0));
+		glTexCoord2f(initFeatures[63].x/640.0, 
+			1.0 - initFeatures[63].y/480.0);
+		glVertex2d((features[63].x/320.0) - 1.0,
+			1.0 - (features[63].y/240.0));
+
+		glTexCoord2f(initFeatures[62].x/640.0, 
+			1.0 - initFeatures[62].y/480.0);
+		glVertex2d((features[62].x/320.0) - 1.0,
+			1.0 - (features[62].y/240.0));
+		glTexCoord2f(initFeatures[63].x/640.0, 
+			1.0 - initFeatures[63].y/480.0);
+		glVertex2d((features[63].x/320.0) - 1.0,
+			1.0 - (features[63].y/240.0));
+		glTexCoord2f(initFeatures[54].x/640.0, 
+			1.0 - initFeatures[54].y/480.0);
+		glVertex2d((features[54].x/320.0) - 1.0,
+			1.0 - (features[54].y/240.0));
 	glEnd();
-	glDrawArrays(GL_QUADS, 0, 4);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+void drawTriangles(bool vis)
+{
 	glBindTexture(GL_TEXTURE_2D, textures[0]);
 	for (int i = 0; i < triangulation.size(); i++)
 	{
 		bool draw = true;
 		bool bottom = false;
 		bool top = false;
+		int visible = 0;
 		for (int a = 0; a < 3; a++)//check whether the triangle covers the area between the lips
 		{
 			if (triangulation[i][a][1] >= 60)
@@ -608,6 +734,82 @@ void doTransformation()
 			if (top && bottom)
 			{
 				draw = false;
+			}
+			if (triangulation[i][a][0] == 0)
+			{
+				if (visi[triangulation[i][a][1]])
+				{
+					visible += 1;
+				}
+			}
+			else
+			{
+				draw = false;
+			}
+		}
+		if (visible == 3 && !vis)
+		{
+			draw = false;
+		}
+		if (visible < 3 && vis)
+		{
+			draw = false;
+		}
+		if (visible == 0)
+		{
+			draw = false;
+		}
+		if (draw)
+		{
+			glBegin(GL_TRIANGLES);
+				for (int j = 0; j < 3; j++)
+				{
+					if (triangulation[i][j][0] == 0)
+					{
+						glTexCoord2f(initFeatures[triangulation[i][j][1]].x/640.0, 
+							1.0 - initFeatures[triangulation[i][j][1]].y/480.0);
+						glVertex2d((features[triangulation[i][j][1]].x/320.0) - 1.0, 
+							1.0 - (features[triangulation[i][j][1]].y/240.0));
+					}
+					else
+					{
+						glTexCoord2f(extraPoints[triangulation[i][j][1]].x/640.0,
+							1.0 - extraPoints[triangulation[i][j][1]].y/480.0);
+						glVertex2d((extraUpdated[triangulation[i][j][1]].x/320.0) - 1.0,
+							1.0 - (extraUpdated[triangulation[i][j][1]].y/240.0));
+					}               
+				}
+			glEnd();
+		}
+		visible = 0;
+	}
+	for (int i = 0; i < lips.size(); i++)
+	{
+		glBegin(GL_TRIANGLES);
+			for (int j = 0; j < 3; j++)
+			{
+				glTexCoord2f(initFeatures[lips[i][j]].x/640.0, 
+					1.0 - initFeatures[lips[i][j]].y/480.0);
+				glVertex2d((features[lips[i][j]].x/320.0) - 1.0, 
+					1.0 - (features[lips[i][j]].y/240.0));
+			}
+		glEnd();
+	}
+
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+void drawExtras()
+{
+	glBindTexture(GL_TEXTURE_2D, textures[0]);
+	for (int i = 0; i < triangulation.size(); i++)
+	{
+		bool draw = false;
+		for (int a = 0; a < 3; a++)
+		{
+			if (triangulation[i][a][0] == 1 && triangulation[i][a][1] >= 10)
+			{
+				draw = true;
 			}
 		}
 		if (draw)
@@ -628,25 +830,128 @@ void doTransformation()
 							1.0 - extraPoints[triangulation[i][j][1]].y/480.0);
 						glVertex2d((extraUpdated[triangulation[i][j][1]].x/320.0) - 1.0,
 							1.0 - (extraUpdated[triangulation[i][j][1]].y/240.0));
-					}
+					}               
 				}
 			glEnd();
 		}
 	}
-	for (int i = 0; i < lips.size(); i++)
+	for (int i = 0; i < triangulation.size(); i++)
 	{
-		glBegin(GL_TRIANGLES);
-			for (int j = 0; j < 3; j++)
+		bool draw = false;
+		for (int a = 0; a < 3; a++)
+		{
+			if (triangulation[i][a][0] == 1 && triangulation[i][a][1] < 10)
 			{
-				glTexCoord2f(initFeatures[lips[i][j]].x/640.0, 
-					1.0 - initFeatures[lips[i][j]].y/480.0);
-				glVertex2d((features[lips[i][j]].x/320.0) - 1.0, 
-					1.0 - (features[lips[i][j]].y/240.0));
+				draw = true;
 			}
-		glEnd();
+			if (triangulation[i][a][0] == 1 && triangulation[i][a][1] >= 10)
+			{
+				draw = false;
+				break;
+			}
+		}
+		if (draw)
+		{
+			glBegin(GL_TRIANGLES);
+				for (int j = 0; j < 3; j++)
+				{
+					if (triangulation[i][j][0] == 0)
+					{
+						glTexCoord2f(initFeatures[triangulation[i][j][1]].x/640.0, 
+							1.0 - initFeatures[triangulation[i][j][1]].y/480.0);
+						glVertex2d((features[triangulation[i][j][1]].x/320.0) - 1.0, 
+							1.0 - (features[triangulation[i][j][1]].y/240.0));
+					}
+					else
+					{
+						glTexCoord2f(extraPoints[triangulation[i][j][1]].x/640.0,
+							1.0 - extraPoints[triangulation[i][j][1]].y/480.0);
+						glVertex2d((extraUpdated[triangulation[i][j][1]].x/320.0) - 1.0,
+							1.0 - (extraUpdated[triangulation[i][j][1]].y/240.0));
+					}               
+				}
+			glEnd();
+		}
 	}
 	glDrawArrays(GL_TRIANGLES, 0, 3);
+	for (int i = 0; i < triangulation.size(); i++)
+	{
+		bool draw = false;
+		for (int a = 0; a < 3; a++)
+		{
+			if (triangulation[i][a][0] == 1 && triangulation[i][a][1] < 10)
+			{
+				draw = true;
+			}
+		}
+		if (draw)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				glBegin(GL_TRIANGLES);
+					if (triangulation[i][j][0] == 0)
+					{
+						glTexCoord2f(initFeatures[triangulation[i][j][1]].x/640.0, 
+							1.0 - initFeatures[triangulation[i][j][1]].y/480.0);
+						glVertex2d((features[triangulation[i][j][1]].x/320.0) - 1.0, 
+							1.0 - (features[triangulation[i][j][1]].y/240.0));
+					}
+					else
+					{
+						glTexCoord2f(extraPoints[triangulation[i][j][1]].x/640.0,
+							1.0 - extraPoints[triangulation[i][j][1]].y/480.0);
+						glVertex2d((extraUpdated[triangulation[i][j][1]].x/320.0) - 1.0,
+							1.0 - (extraUpdated[triangulation[i][j][1]].y/240.0));
+					}               
+				glEnd();
+			}
+		}
+	}
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+void doTransformation()
+{
+	//Don't get new triangulations every time. Use the original set of triangles, and apply it like a texture
+	if (!gotContext)
+	{
+		glEnable(GL_TEXTURE_2D);
+		glutInitWindowSize(initImg.cols, initImg.rows);
+		glutInitWindowPosition(0,0);
+		GLWindowID = glutCreateWindow("Output");
+		glutSetWindow(GLWindowID);
+		gotContext = true;
+		matToTexture(GL_NEAREST, GL_NEAREST, GL_CLAMP);
+		getLips();
+		videoOut.open("Z:\\out.divx", CV_FOURCC('W','M','V','2'), 15, initImg.size());
+		if (videoOut.isOpened())
+		{
+			printf("Video out opened");
+		}
+		else
+		{
+			printf("Video out not opened");
+		}
+	}
+	
+	updateExtraPoints();
+	//Rendering stuff here.
+	glClear(GL_COLOR_BUFFER_BIT);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textures[1]);
+	glBegin(GL_QUADS);
+		glTexCoord2f(0.0, 0.0); glVertex2d(-1.0, -1.0);
+		glTexCoord2f(0.0, 1.0); glVertex2d(-1.0, 1.0);
+		glTexCoord2f(1.0, 1.0); glVertex2d(1.0, 1.0);
+		glTexCoord2f(1.0, 0.0); glVertex2d(1.0, -1.0);
+	glEnd();
+	glDrawArrays(GL_QUADS, 0, 4);
+	drawExtras();
+	drawTriangles(false);
+	drawTriangles(true);
+	drawMouth();
 	glutSwapBuffers();
+	writeFrame();
 }
 
 void getExtraPoints(Mat edges)
@@ -662,7 +967,7 @@ void getExtraPoints(Mat edges)
 				break;
 			}
 		}
-	}
+	}//0-9, above eyebrows
 	//then to the side
 	for (int i = 0; i <= features[17].x; i++)//from the left end inwards
 	{
@@ -671,7 +976,7 @@ void getExtraPoints(Mat edges)
 			extraPoints.push_back(Point(i, features[17].y));
 			break;
 		}
-	}
+	}//10, left of eyebrows
 	for (int i = edges.cols - 1; i >= features[26].x; i--)//this time from the right inwards
 	{
 		if (edges.at<uchar>(Point(i, features[26].y)) != 0)//record and stop on the first edge
@@ -679,7 +984,7 @@ void getExtraPoints(Mat edges)
 			extraPoints.push_back(Point(i, features[26].y));
 			break;
 		}
-	}
+	}//11, right of eyebrows
 	//and, to make it cleaner, two "halfway" points
 	int xPos = cvRound((extraPoints[extraPoints.size() - 2].x + features[17].x) / 2);//halfway between the outer eyebrow point and the side point
 	for (int i = 0; i <= features[17].y; i++)//from the top
@@ -689,7 +994,7 @@ void getExtraPoints(Mat edges)
 			extraPoints.push_back(Point(xPos, i));
 			break;
 		}
-	}
+	}//12, left
 	xPos = cvRound((extraPoints[extraPoints.size() - 2].x + features[26].x) / 2);
 	for (int i = 0; i <= features[26].y; i++)
 	{
@@ -698,7 +1003,7 @@ void getExtraPoints(Mat edges)
 			extraPoints.push_back(Point(xPos, i));
 			break;
 		}
-	}
+	}//13, right
 	for (int i = 0; i < 3; i++)
 	{							
 		for (int j = 0; j < features[i].x; j++)
@@ -713,7 +1018,7 @@ void getExtraPoints(Mat edges)
 		{
 			extraPoints.push_back(Point(-1,-1));
 		}
-	}
+	}//14-16, left ear
 	for (int i = 16; i > 13; i--)
 	{
 		for (int j = edges.cols; j >= features[i].x; j--)
@@ -728,7 +1033,8 @@ void getExtraPoints(Mat edges)
 		{
 			extraPoints.push_back(Point(-1,-1));
 		}
-	}
+	}//17-19, right ear
+	//getNeck();
 }
 
 void extractFace(Mat img)
@@ -758,7 +1064,7 @@ void extractFace(Mat img)
 	}
 	namedWindow("triangles", 1);
 	imshow("triangles", triangles);
-	imwrite("Z:\\triangles.jpg", triangles);
+	mouth = imread("Z:\\mouth.jpg");
 }
 
 void doFaceTracking(int argc, char **argv){
@@ -1121,7 +1427,8 @@ void doFaceTracking(int argc, char **argv){
 
 			GRAYSCALE = false;
 
-			if(quitmain==1){
+			if(quitmain==1)
+			{
 				cout << "Quit." << endl;
 				return;
 			}
@@ -1136,8 +1443,8 @@ void doFaceTracking(int argc, char **argv){
 			{
 				initImg = img.clone();
 				extractFace(img);
-				vCap.release();
-				vCap = VideoCapture(device);
+				//vCap.release();
+				//vCap = VideoCapture(device);
 			}
 			if (gotFace)
 			{
