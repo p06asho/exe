@@ -39,24 +39,24 @@
 
 // SimpleCLM.cpp : Defines the entry point for the console application.
 //#include <glew.h>
-
+#define _USE_MATH_DEFINES
 #include <omp.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<glew.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <glew.h>
 #include <filesystem.hpp>
 #include <filesystem\fstream.hpp>
 #include <highgui.h>
 #include <GL/freeglut.h>
-#include<GL/GL.h>
+#include <GL/GL.h>
 #include "SimplePuppets.h"
 #include <cv.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/photo/photo.hpp>
-#include <cmath>
-
-omp_lock_t writelock;
+#include <math.h>
+#include <fstream>
+#include <iostream>
 
 // The modules that are being used for tracking
 CLMTracker::TrackerCLM clmModel;
@@ -91,6 +91,12 @@ vector<vector<vector<int>>> triangulation;
 vector<vector<int>> lips;
 Mat mouth;
 VideoWriter videoOut;
+int inputFPS;
+Size frameSize;
+vector<double> globalColourResults;
+vector<double> localColourResults;
+vector<double> globalGradientResults;
+vector<double> localGradientResults;
 
 
 void use_webcam(){			//called when the 'use webcam' checkbox is ticked
@@ -510,7 +516,14 @@ void updateExtraPoints()
 		if (extraPoints[14+i] != Point(-1,-1))
 		{
 			newX = cvRound(xScaleFactor*(extraPoints[14+i].x - initFeatures[i].x));
-			pos = rotatePoint(Point(0,0), Point(newX,0),rotation);
+			if (features[17].x > features[0].x)
+			{
+				pos = rotatePoint(Point(0,0), Point(newX,0),rotation);
+			}
+			else
+			{
+				pos = rotatePoint(Point(0,0), Point(-newX,0),rotation);
+			}
 			extraUpdated[14+i] = Point(features[i].x+pos.x, features[i].y+pos.y);
 		}
 	}
@@ -546,7 +559,14 @@ void updateExtraPoints()
 		if (extraPoints[17+i] != Point(-1,-1))
 		{
 			newX = cvRound(xScaleFactor*(extraPoints[17+i].x - initFeatures[16-i].x));
-			pos = rotatePoint(Point(0,0), Point(newX, 0), rotation);
+			if (features[16].x > features[26].x)
+			{
+				pos = rotatePoint(Point(0,0), Point(newX, 0), rotation);
+			}
+			else
+			{
+				pos = rotatePoint(Point(0,0), Point(-newX, 0), rotation);
+			}
 			extraUpdated[17+i] = Point(features[16-i].x+pos.x,features[16-i].y+pos.y);
 		}
 	}
@@ -626,81 +646,81 @@ void drawMouth()
 {
 	glBindTexture(GL_TEXTURE_2D, textures[2]);
 	glBegin(GL_TRIANGLES);
-		glTexCoord2f(initFeatures[48].x/640.0, 
-			1.0 - initFeatures[48].y/480.0);
+		glTexCoord2f(254/640.0, 
+			1.0 - 361/480.0);
 		glVertex2d((features[48].x/320.0) - 1.0,
 			1.0 - (features[48].y/240.0));
-		glTexCoord2f(initFeatures[65].x/640.0, 
-			1.0 - initFeatures[65].y/480.0);
+		glTexCoord2f(258/640.0, 
+			1.0 - 381/480.0);
 		glVertex2d((features[65].x/320.0) - 1.0,
 			1.0 - (features[65].y/240.0));
-		glTexCoord2f(initFeatures[60].x/640.0, 
-			1.0 - initFeatures[60].y/480.0);
+		glTexCoord2f(329/640.0, 
+			1.0 - 357/480.0);
 		glVertex2d((features[60].x/320.0) - 1.0,
 			1.0 - (features[60].y/240.0));
 
-		glTexCoord2f(initFeatures[65].x/640.0, 
-			1.0 - initFeatures[65].y/480.0);
+		glTexCoord2f(258/640.0, 
+			1.0 - 381/480.0);
 		glVertex2d((features[65].x/320.0) - 1.0,
 			1.0 - (features[65].y/240.0));
-		glTexCoord2f(initFeatures[60].x/640.0, 
-			1.0 - initFeatures[60].y/480.0);
+		glTexCoord2f(329/640.0, 
+			1.0 - 357/480.0);
 		glVertex2d((features[60].x/320.0) - 1.0,
 			1.0 - (features[60].y/240.0));
-		glTexCoord2f(initFeatures[64].x/640.0, 
-			1.0 - initFeatures[64].y/480.0);
+		glTexCoord2f(270/640.0, 
+			1.0 - 397/480.0);
 		glVertex2d((features[64].x/320.0) - 1.0,
 			1.0 - (features[64].y/240.0));
 
-		glTexCoord2f(initFeatures[60].x/640.0, 
-			1.0 - initFeatures[60].y/480.0);
+		glTexCoord2f(329/640.0, 
+			1.0 - 357/480.0);
 		glVertex2d((features[60].x/320.0) - 1.0,
 			1.0 - (features[60].y/240.0));
-		glTexCoord2f(initFeatures[61].x/640.0, 
-			1.0 - initFeatures[61].y/480.0);
+		glTexCoord2f(323/640.0, 
+			1.0 - 378/480.0);
 		glVertex2d((features[61].x/320.0) - 1.0,
 			1.0 - (features[61].y/240.0));
-		glTexCoord2f(initFeatures[64].x/640.0, 
-			1.0 - initFeatures[64].y/480.0);
+		glTexCoord2f(270/640.0, 
+			1.0 - 397/480.0);
 		glVertex2d((features[64].x/320.0) - 1.0,
 			1.0 - (features[64].y/240.0));
 
-		glTexCoord2f(initFeatures[61].x/640.0, 
-			1.0 - initFeatures[61].y/480.0);
+		glTexCoord2f(323/640.0, 
+			1.0 - 378/480.0);
 		glVertex2d((features[61].x/320.0) - 1.0,
 			1.0 - (features[61].y/240.0));
-		glTexCoord2f(initFeatures[64].x/640.0, 
-			1.0 - initFeatures[64].y/480.0);
+		glTexCoord2f(270/640.0, 
+			1.0 - 397/480.0);
 		glVertex2d((features[64].x/320.0) - 1.0,
 			1.0 - (features[64].y/240.0));
-		glTexCoord2f(initFeatures[63].x/640.0, 
-			1.0 - initFeatures[63].y/480.0);
+		glTexCoord2f(289/640.0, 
+			1.0 - 402/480.0);
 		glVertex2d((features[63].x/320.0) - 1.0,
 			1.0 - (features[63].y/240.0));
 
-		glTexCoord2f(initFeatures[61].x/640.0, 
-			1.0 - initFeatures[61].y/480.0);
+		glTexCoord2f(323/640.0, 
+			1.0 - 378/480.0);
 		glVertex2d((features[61].x/320.0) - 1.0,
 			1.0 - (features[61].y/240.0));
-		glTexCoord2f(initFeatures[62].x/640.0, 
-			1.0 - initFeatures[62].y/480.0);
+		glTexCoord2f(310/640.0, 
+			1.0 - 395/480.0);
 		glVertex2d((features[62].x/320.0) - 1.0,
 			1.0 - (features[62].y/240.0));
-		glTexCoord2f(initFeatures[63].x/640.0, 
-			1.0 - initFeatures[63].y/480.0);
+		glTexCoord2f(289/640.0, 
+			1.0 - 402/480.0);
 		glVertex2d((features[63].x/320.0) - 1.0,
 			1.0 - (features[63].y/240.0));
 
-		glTexCoord2f(initFeatures[62].x/640.0, 
-			1.0 - initFeatures[62].y/480.0);
+		glTexCoord2f(310/640.0, 
+			1.0 - 395/480.0);
 		glVertex2d((features[62].x/320.0) - 1.0,
 			1.0 - (features[62].y/240.0));
-		glTexCoord2f(initFeatures[63].x/640.0, 
-			1.0 - initFeatures[63].y/480.0);
+		glTexCoord2f(289/640.0, 
+			1.0 - 402/480.0);
 		glVertex2d((features[63].x/320.0) - 1.0,
 			1.0 - (features[63].y/240.0));
-		glTexCoord2f(initFeatures[54].x/640.0, 
-			1.0 - initFeatures[54].y/480.0);
+		glTexCoord2f(330/640.0, 
+			1.0 - 357/480.0);
 		glVertex2d((features[54].x/320.0) - 1.0,
 			1.0 - (features[54].y/240.0));
 	glEnd();
@@ -923,7 +943,7 @@ void doTransformation()
 		gotContext = true;
 		matToTexture(GL_NEAREST, GL_NEAREST, GL_CLAMP);
 		getLips();
-		videoOut.open("Z:\\out.divx", CV_FOURCC('W','M','V','2'), 15, initImg.size());
+		videoOut.open("Z:/out.wmv", CV_FOURCC('W','M','V','2'), inputFPS, frameSize);
 		if (videoOut.isOpened())
 		{
 			printf("Video out opened");
@@ -1037,6 +1057,33 @@ void getExtraPoints(Mat edges)
 	//getNeck();
 }
 
+string getImgType(int imgTypeInt)
+{
+    int numImgTypes = 35; // 7 base types, with five channel options each (none or C1, ..., C4)
+
+    int enum_ints[] =       {CV_8U,  CV_8UC1,  CV_8UC2,  CV_8UC3,  CV_8UC4,
+                             CV_8S,  CV_8SC1,  CV_8SC2,  CV_8SC3,  CV_8SC4,
+                             CV_16U, CV_16UC1, CV_16UC2, CV_16UC3, CV_16UC4,
+                             CV_16S, CV_16SC1, CV_16SC2, CV_16SC3, CV_16SC4,
+                             CV_32S, CV_32SC1, CV_32SC2, CV_32SC3, CV_32SC4,
+                             CV_32F, CV_32FC1, CV_32FC2, CV_32FC3, CV_32FC4,
+                             CV_64F, CV_64FC1, CV_64FC2, CV_64FC3, CV_64FC4};
+
+    string enum_strings[] = {"CV_8U",  "CV_8UC1",  "CV_8UC2",  "CV_8UC3",  "CV_8UC4",
+                             "CV_8S",  "CV_8SC1",  "CV_8SC2",  "CV_8SC3",  "CV_8SC4",
+                             "CV_16U", "CV_16UC1", "CV_16UC2", "CV_16UC3", "CV_16UC4",
+                             "CV_16S", "CV_16SC1", "CV_16SC2", "CV_16SC3", "CV_16SC4",
+                             "CV_32S", "CV_32SC1", "CV_32SC2", "CV_32SC3", "CV_32SC4",
+                             "CV_32F", "CV_32FC1", "CV_32FC2", "CV_32FC3", "CV_32FC4",
+                             "CV_64F", "CV_64FC1", "CV_64FC2", "CV_64FC3", "CV_64FC4"};
+
+    for(int i=0; i<numImgTypes; i++)
+    {
+        if(imgTypeInt == enum_ints[i]) return enum_strings[i];
+    }
+    return "unknown image type";
+}
+
 void extractFace(Mat img)
 {
 	for (int i = 0; i < 66; i++)
@@ -1064,7 +1111,14 @@ void extractFace(Mat img)
 	}
 	namedWindow("triangles", 1);
 	imshow("triangles", triangles);
-	mouth = imread("Z:\\mouth.jpg");
+	mouth = imread("Z:\\Documents\\Project\\mouth.jpg");
+	string imageType = getImgType(img.type());
+	printf("Image size: %d \n", sizeof img);
+	std::cout << "Image type: " << imageType;
+	int arraySize = sizeof features;
+	printf("Array size: %d \n", arraySize);
+	int pointSize = sizeof features[0];
+	printf("Point size: %d \n", pointSize);
 }
 
 void doFaceTracking(int argc, char **argv){
@@ -1072,31 +1126,27 @@ void doFaceTracking(int argc, char **argv){
 
 	bool done = false;
 
-	while(!done )
-	{
-		cout << "Not done yet!" << endl;
-		cout << USEWEBCAM << ", " << NEWFILE << endl;
 
 
-		vector<string> arguments = get_arguments(argc, argv);
+	vector<string> arguments = get_arguments(argc, argv);
+	
+	// Some initial parameters that can be overriden from command line	
+	vector<string> files, dDirs, outposes, outvideos, outfeatures;
 
-		// Some initial parameters that can be overriden from command line	
-		vector<string> files, dDirs, outposes, outvideos, outfeatures;
+	// By default try webcam
+	int device = 0;
 
-		// By default try webcam
-		int device = 0;
+	// cx and cy aren't always half dimx or half dimy, so need to be able to override it (start with unit vals and init them if none specified)
+	float fx = 500, fy = 500, cx = 0, cy = 0;
+	int dimx = 0, dimy = 0;
 
-		// cx and cy aren't always half dimx or half dimy, so need to be able to override it (start with unit vals and init them if none specified)
-		float fx = 500, fy = 500, cx = 0, cy = 0;
-		int dimx = 0, dimy = 0;
+	bool useCLMTracker = true;
 
-		bool useCLMTracker = true;
+	CLMWrapper::CLMParameters clmParams(arguments);
 
-		CLMWrapper::CLMParameters clmParams(arguments);
+	clmParams.wSizeCurrent = clmParams.wSizeInit;
 
-		clmParams.wSizeCurrent = clmParams.wSizeInit;
-
-		PoseDetectorHaar::PoseDetectorHaarParameters haarParams;
+	PoseDetectorHaar::PoseDetectorHaarParameters haarParams;
 
 #if OS_UNIX
 		haarParams.ClassifierLocation = "/usr/share/OpenCV-2.3.1/haarcascades/haarcascade_frontalface_alt.xml";
@@ -1104,364 +1154,604 @@ void doFaceTracking(int argc, char **argv){
 		haarParams.ClassifierLocation = "..\\lib\\3rdParty\\OpenCV\\classifiers\\haarcascade_frontalface_alt.xml";
 #endif
 
-		// Get the input output file parameters
-		CLMWrapper::get_video_input_output_params(files, dDirs, outposes, outvideos, outfeatures, arguments);
-		// Get camera parameters
-		CLMWrapper::get_camera_params(fx, fy, cx, cy, dimx, dimy, arguments);    
+	// Get the input output file parameters
+	CLMWrapper::get_video_input_output_params(files, dDirs, outposes, outvideos, outfeatures, arguments);
+	// Get camera parameters
+	CLMWrapper::get_camera_params(fx, fy, cx, cy, dimx, dimy, arguments);    
 
-		// Face detector initialisation
-		CascadeClassifier classifier(haarParams.ClassifierLocation);
+	// Face detector initialisation
+	CascadeClassifier classifier(haarParams.ClassifierLocation);
 
-		int f_n = -1;
+	int f_n = -1;
 
-		// We might specify multiple video files as arguments
-		if(files.size() > 0)
+	// We might specify multiple video files as arguments
+	if(files.size() > 0)
+	{
+		f_n++;			
+		file = files[f_n];
+	}
+
+	if(NEWFILE)
+	{
+		file = inputfile;
+	}
+
+	bool readDepth = !dDirs.empty();
+
+	if(USEWEBCAM)
+	{
+		INFO_STREAM( "Attempting to capture from device: " << device );
+		vCap = VideoCapture( device );
+		if( !vCap.isOpened() ) 
 		{
-			f_n++;			
-			file = files[f_n];
+			USEWEBCAM = false;
+			CHANGESOURCE = true;
+			resetERIExpression();
 		}
+	}
 
-		if(NEWFILE){
-			file = inputfile;
-		}
+	// Do some grabbing
+	if( !USEWEBCAM)
+	{
 
-		bool readDepth = !dDirs.empty();
-
-		if(USEWEBCAM)
+		if(file.size() > 0 )
 		{
-			INFO_STREAM( "Attempting to capture from device: " << device );
-			vCap = VideoCapture( device );
-			if( !vCap.isOpened() ) 
-			{
-				USEWEBCAM = false;
-				CHANGESOURCE = true;
-				resetERIExpression();
-			}
+			INFO_STREAM( "Attempting to read from file: " << file );
+			vCap = VideoCapture( file );
 		}
-
-		// Do some grabbing
-		if( !USEWEBCAM)
+		else 
 		{
-
-			if(file.size() > 0 )
-			{
-				INFO_STREAM( "Attempting to read from file: " << file );
-				vCap = VideoCapture( file );
-			}
-			else 
-			{
-				INFO_STREAM("No file specified. Please use webcam or load file manually");
-				USEWEBCAM = 1;
-			}
+			INFO_STREAM("No file specified. Please use webcam or load file manually");
+			USEWEBCAM = 1;
 		}
-		vCap = VideoCapture("Z:\\Documents\\Project\\init.wmv");
-		if (!vCap.isOpened())
-		{
-			printf("Failed to open file");
-		}
+	}
+	vCap = VideoCapture("Z:\\Documents\\Project\\init.wmv");
+	if (!vCap.isOpened())
+	{
+		printf("Failed to open file");
+	}
 
-		Mat img;
-		vCap.read(img);
-		//vCap >> img;
+	Mat img;
+	vCap.read(img);
+	//vCap >> img;
 
 
-		// If no dimensions defined, do not do any resizing
-		if(dimx == 0 || dimy == 0)
-		{
-			dimx = img.cols;
-			dimy = img.rows;
-		}
+	// If no dimensions defined, do not do any resizing
+	if(dimx == 0 || dimy == 0)
+	{
+		dimx = img.cols;
+		dimy = img.rows;
+	}
 
-		// If optical centers are not defined just use center of image
-		if(cx == 0 || cy == 0)
-		{
-			cx = dimx / 2.0f;
-			cy = dimy / 2.0f;
-		}
+	// If optical centers are not defined just use center of image
+	if(cx == 0 || cy == 0)
+	{
+		cx = dimx / 2.0f;
+		cy = dimy / 2.0f;
+	}
 
+	//for constant-size input:
+	//dimx = 200;
+	//dimy = 200;
+	//cx = 100;
+	//cy = 100;
+
+
+
+	int frameProc = 0;
+
+	// faces in a row detected
+	facesInRow = 0;
+
+	// saving the videos
+	VideoWriter writerFace;
+	if(!outvideos.empty())
+	{
+		writerFace = VideoWriter(outvideos[f_n], CV_FOURCC('D','I','V','X'), 30, img.size(), true);		
+	}
+
+	// Variables useful for the tracking itself
+	bool success = false;
+	trackingInitialised = false;
+
+	// For measuring the timings
+	int64 t1,t0 = cv::getTickCount();
+	double fps = 10;
+
+	Mat disp;
+	Mat rgbimg;
+
+	CHANGESOURCE = false;
+
+
+	//todo: fix bug with crash when selecting video file to play under webcam mode (disable video select button?)
+	//also occasionally opencv error when changing between different sizes of video input/webcam owing to shape going outside boundries. 
+
+
+	gotContext = false;
+	while(!img.empty() && !CHANGESOURCE && !done)						//This is where stuff happens once the file's open.
+	{		
 		//for constant-size input:
-		//dimx = 200;
-		//dimy = 200;
-		//cx = 100;
-		//cy = 100;
+		//resize(img, img, Size( dimx, dimy));
 
+		Mat_<float> depth;
+		Mat_<uchar> gray;
+		cvtColor(img, gray, CV_BGR2GRAY);
+		cvtColor(img, rgbimg, CV_BGR2RGB);
 
-
-		int frameProc = 0;
-
-		// faces in a row detected
-		facesInRow = 0;
-
-		// saving the videos
-		VideoWriter writerFace;
-		if(!outvideos.empty())
+		if(GRAYSCALE)
 		{
-			writerFace = VideoWriter(outvideos[f_n], CV_FOURCC('D','I','V','X'), 30, img.size(), true);		
+			cvtColor(gray, rgbimg, CV_GRAY2RGB);
 		}
 
-		// Variables useful for the tracking itself
-		bool success = false;
-		trackingInitialised = false;
+		parsecolour(rgbimg);			//this sends the rgb image to the PAW loop
 
-		// For measuring the timings
-		int64 t1,t0 = cv::getTickCount();
-		double fps = 10;
+		writeToFile = 0;
 
-		Mat disp;
-		Mat rgbimg;
+		if(GETFACE)
+		{
+			GETFACE = false;
+			writeToFile = !writeToFile;
+			PAWREADAGAIN = true;
+		}
 
-		CHANGESOURCE = false;
+		// Don't resize if it's unneeded
+		Mat_<uchar> img_scaled;		
+		if(dimx != gray.cols || dimy != gray.rows)
+		{
+			resize( gray, img_scaled, Size( dimx, dimy ) , 0, 0, INTER_NEAREST );
+			resize(img, disp, Size( dimx, dimy), 0, 0, INTER_NEAREST );
+		}
+		else
+		{
+			img_scaled = gray;
+			disp = img.clone();
+		}
 
+		disp.copyTo(faceimg);
 
-		//todo: fix bug with crash when selecting video file to play under webcam mode (disable video select button?)
-		//also occasionally opencv error when changing between different sizes of video input/webcam owing to shape going outside boundries. 
+		//namedWindow("colour",1);
 
-
-		gotContext = false;
-		while(!img.empty() && !CHANGESOURCE && !done)						//This is where stuff happens once the file's open.
-		{		
-			//for constant-size input:
-			//resize(img, img, Size( dimx, dimy));
-
-			Mat_<float> depth;
-			Mat_<uchar> gray;
-			cvtColor(img, gray, CV_BGR2GRAY);
-			cvtColor(img, rgbimg, CV_BGR2RGB);
-
-			if(GRAYSCALE)
+		// Get depth image
+		if(readDepth)
+		{
+			char* dst = new char[100];
+			std::stringstream sstream;
+			//sstream << dDir << "\\depth%06d.png";
+			sstream << dDirs[f_n] << "\\depth%05d.png";
+			sprintf(dst, sstream.str().c_str(), frameProc + 1);
+			Mat_<short> dImg = imread(string(dst), -1);
+			if(!dImg.empty())
 			{
-				cvtColor(gray, rgbimg, CV_GRAY2RGB);
-			}
-
-			parsecolour(rgbimg);			//this sends the rgb image to the PAW loop
-
-			writeToFile = 0;
-
-			if(GETFACE)
-			{
-				GETFACE = false;
-				writeToFile = !writeToFile;
-				PAWREADAGAIN = true;
-			}
-
-			// Don't resize if it's unneeded
-			Mat_<uchar> img_scaled;		
-			if(dimx != gray.cols || dimy != gray.rows)
-			{
-				resize( gray, img_scaled, Size( dimx, dimy ) , 0, 0, INTER_NEAREST );
-				resize(img, disp, Size( dimx, dimy), 0, 0, INTER_NEAREST );
-			}
-			else
-			{
-				img_scaled = gray;
-				disp = img.clone();
-			}
-
-			disp.copyTo(faceimg);
-
-			//namedWindow("colour",1);
-
-			// Get depth image
-			if(readDepth)
-			{
-				char* dst = new char[100];
-				std::stringstream sstream;
-				//sstream << dDir << "\\depth%06d.png";
-				sstream << dDirs[f_n] << "\\depth%05d.png";
-				sprintf(dst, sstream.str().c_str(), frameProc + 1);
-				Mat_<short> dImg = imread(string(dst), -1);
-				if(!dImg.empty())
+				if(dimx != dImg.cols || dimy != dImg.rows)
 				{
-					if(dimx != dImg.cols || dimy != dImg.rows)
-					{
-						Mat_<short> dImgT;
-						resize(dImg, dImgT, Size( dimx, dimy), 0, 0, INTER_NEAREST );
-						dImgT.convertTo(depth, CV_32F);
-					}
-					else
-					{
-						dImg.convertTo(depth, CV_32F);
-					}
+					Mat_<short> dImgT;
+					resize(dImg, dImgT, Size( dimx, dimy), 0, 0, INTER_NEAREST );
+					dImgT.convertTo(depth, CV_32F);
 				}
 				else
 				{
-					WARN_STREAM( "Can't find depth image" );
+					dImg.convertTo(depth, CV_32F);
 				}
 			}
-
-			Vec6d poseEstimateHaar;
-			Matx66d poseEstimateHaarUncertainty;
-
-			Rect faceRegion;
-
-			// The start place where CLM should start a search (or if it fails, can use the frame detection)
-			if(!trackingInitialised || (!success && ( frameProc  % 5 == 0)))
+			else
 			{
-				// The tracker can return multiple head pose observation
-				vector<Vec6d> poseEstimatesInitialiser;
-				vector<Matx66d> covariancesInitialiser;			
-				vector<Rect> regionsInitialiser;
+				WARN_STREAM( "Can't find depth image" );
+			}
+		}
 
-				bool initSuccess = PoseDetectorHaar::InitialisePosesHaar(img_scaled, depth, poseEstimatesInitialiser, covariancesInitialiser, regionsInitialiser, classifier, fx, fy, cx, cy, haarParams);
+		Vec6d poseEstimateHaar;
+		Matx66d poseEstimateHaarUncertainty;
 
-				if(initSuccess)
+		Rect faceRegion;
+
+		// The start place where CLM should start a search (or if it fails, can use the frame detection)
+		if(!trackingInitialised || (!success && ( frameProc  % 5 == 0)))
+		{
+			// The tracker can return multiple head pose observation
+			vector<Vec6d> poseEstimatesInitialiser;
+			vector<Matx66d> covariancesInitialiser;			
+			vector<Rect> regionsInitialiser;
+
+			bool initSuccess = PoseDetectorHaar::InitialisePosesHaar(img_scaled, depth, poseEstimatesInitialiser, covariancesInitialiser, regionsInitialiser, classifier, fx, fy, cx, cy, haarParams);
+
+			if(initSuccess)
+			{
+				if(poseEstimatesInitialiser.size() > 1)
 				{
-					if(poseEstimatesInitialiser.size() > 1)
+					cout << "ambiguous detection ";
+					// keep the closest one (this is a hack for the experiment)
+					double best = 10000;
+					int bestIndex = -1;
+					for( size_t i = 0; i < poseEstimatesInitialiser.size(); ++i)
 					{
-						cout << "ambiguous detection ";
-						// keep the closest one (this is a hack for the experiment)
-						double best = 10000;
-						int bestIndex = -1;
-						for( size_t i = 0; i < poseEstimatesInitialiser.size(); ++i)
+						cout << poseEstimatesInitialiser[i][2] << " ";
+						if(poseEstimatesInitialiser[i][2] < best  && poseEstimatesInitialiser[i][2] > 200)
 						{
-							cout << poseEstimatesInitialiser[i][2] << " ";
-							if(poseEstimatesInitialiser[i][2] < best  && poseEstimatesInitialiser[i][2] > 200)
-							{
-								bestIndex = i;
-								best = poseEstimatesInitialiser[i][2];
-							}									
-						}
-						if(bestIndex != -1)
-						{
-							cout << endl << "Choosing " << poseEstimatesInitialiser[bestIndex][2] << regionsInitialiser[bestIndex].x << " " << regionsInitialiser[bestIndex].y <<  " " << regionsInitialiser[bestIndex].width << " " <<  regionsInitialiser[bestIndex].height << endl;
-							faceRegion = regionsInitialiser[bestIndex];
-						}
-						else
-						{
-							initSuccess = false;
-						}
+							bestIndex = i;
+							best = poseEstimatesInitialiser[i][2];
+						}									
+					}
+					if(bestIndex != -1)
+					{
+						cout << endl << "Choosing " << poseEstimatesInitialiser[bestIndex][2] << regionsInitialiser[bestIndex].x << " " << regionsInitialiser[bestIndex].y <<  " " << regionsInitialiser[bestIndex].width << " " <<  regionsInitialiser[bestIndex].height << endl;
+						faceRegion = regionsInitialiser[bestIndex];
 					}
 					else
-					{	
-						faceRegion = regionsInitialiser[0];
-					}				
-
-					facesInRow++;
+					{
+						initSuccess = false;
+					}
 				}
+				else
+				{	
+					faceRegion = regionsInitialiser[0];
+				}				
+				facesInRow++;
 			}
+		}
 
-			// If condition for tracking is met initialise the trackers
-			if(!trackingInitialised && facesInRow >= 1)
-			{			
-				trackingInitialised = CLMWrapper::InitialiseCLM(img_scaled, depth, clmModel, poseEstimateHaar, faceRegion, fx, fy, cx, cy, clmParams);		
-				facesInRow = 0;
-			}		
+		// If condition for tracking is met initialise the trackers
+		if(!trackingInitialised && facesInRow >= 1)
+		{			
+			trackingInitialised = CLMWrapper::InitialiseCLM(img_scaled, depth, clmModel, poseEstimateHaar, faceRegion, fx, fy, cx, cy, clmParams);		
+			facesInRow = 0;
+		}		
 
-			// opencv detector is needed here, if tracking failed reinitialise using it
-			if(trackingInitialised)
-			{
-				success = CLMWrapper::TrackCLM(img_scaled, depth, clmModel, vector<Vec6d>(), vector<Matx66d>(), faceRegion, fx, fy, cx, cy, clmParams);								
-			}			
-			if(success)
-			{			
-				clmParams.wSizeCurrent = clmParams.wSizeSmall;
-			}
-			else
-			{
-				clmParams.wSizeCurrent = clmParams.wSizeInit;
-			}
+		// opencv detector is needed here, if tracking failed reinitialise using it
+		if(trackingInitialised)
+		{
+			success = CLMWrapper::TrackCLM(img_scaled, depth, clmModel, vector<Vec6d>(), vector<Matx66d>(), faceRegion, fx, fy, cx, cy, clmParams);								
+		}			
+		if(success)
+		{			
+			clmParams.wSizeCurrent = clmParams.wSizeSmall;
+		}
+		else
+		{
+			clmParams.wSizeCurrent = clmParams.wSizeInit;
+		}
 
-			poseEstimateCLM = CLMWrapper::GetPoseCLM(clmModel, fx, fy, cx, cy, clmParams);
+		poseEstimateCLM = CLMWrapper::GetPoseCLM(clmModel, fx, fy, cx, cy, clmParams);
 
-			shape = clmModel._shape;
-			//Use poseEstimateCLM for box
-			int n = shape.rows / 2;
-			int idx = clmModel._clm.GetViewIdx();
-			for (int i = 0; i < n; ++i)
-			{
-				features[i] = Point((int)shape.at<double>(i), (int)shape.at<double>(i +n));
-				cv::circle(disp, features[i], 1, Scalar(0,0,255), 2);
-				if (clmModel._clm._visi[0][idx].at<int>(i)) visi[i] = true;
-				else visi[i] = false;
-			}
-			DrawBox(disp, poseEstimateCLM, Scalar(0,0,255), 3, fx, fy, cx, cy);
+		shape = clmModel._shape;
+		//Use poseEstimateCLM for box
+		int n = shape.rows / 2;
+		int idx = clmModel._clm.GetViewIdx();
+		for (int i = 0; i < n; ++i)
+		{
+			features[i] = Point((int)shape.at<double>(i), (int)shape.at<double>(i +n));
+			cv::circle(disp, features[i], 1, Scalar(0,0,255), 2);
+			if (clmModel._clm._visi[0][idx].at<int>(i)) visi[i] = true;
+			else visi[i] = false;
+		}
+		//DrawBox(disp, poseEstimateCLM, Scalar(0,0,255), 3, fx, fy, cx, cy);
 
-			if(frameProc % 10 == 0)
-			{      
-				t1 = cv::getTickCount();
-				fps = 10.0 / (double(t1-t0)/cv::getTickFrequency()); 
-				t0 = t1;
-			}
+		if(frameProc % 10 == 0)
+		{      
+			t1 = cv::getTickCount();
+			fps = 10.0 / (double(t1-t0)/cv::getTickFrequency()); 
+			t0 = t1;
+		}
 
-			frameProc++;
-			Mat disprgb;			
-			imshow("colour", disp);
+		frameProc++;
+		Mat disprgb;			
+		imshow("colour", disp);
 
-			cvtColor(disp, disprgb, CV_RGB2BGR);
-			resize(disprgb,disprgb,Size(500,400),0,0,INTER_NEAREST );
+		cvtColor(disp, disprgb, CV_RGB2BGR);
+		resize(disprgb,disprgb,Size(500,400),0,0,INTER_NEAREST );
 
 
-			char fpsC[255];
-			_itoa((int)fps, fpsC, 10);
-			string fpsSt("FPS:");
-			fpsSt += fpsC;
-			cv::putText(disprgb, fpsSt, cv::Point(10,20), CV_FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(255,0,0));
+		char fpsC[255];
+		_itoa((int)fps, fpsC, 10);
+		string fpsSt("FPS:");
+		fpsSt += fpsC;
+		cv::putText(disprgb, fpsSt, cv::Point(10,20), CV_FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(255,0,0));
 
-			opencvImage = disprgb;
+		opencvImage = disprgb;
 
-			if(disprgb.empty())
-			{
-				SHOWIMAGE = false;
-			}
-			else
-			{
-				SHOWIMAGE = true;
-			}
+		if(disprgb.empty())
+		{
+			SHOWIMAGE = false;
+		}
+		else
+		{
+			SHOWIMAGE = true;
+		}
 
-			if(!depth.empty())
-			{
-				imshow("depth", depth/2000.0);
-			}
+		if(!depth.empty())
+		{
+			imshow("depth", depth/2000.0);
+		}
 
-			vCap >> img;
+		vCap >> img;
 
-			if(!outvideos.empty())
-			{		
-				writerFace << disp;
-			}
+		if(!outvideos.empty())
+		{		
+			writerFace << disp;
+		}
 
-			// detect key presses
-			char c = cv::waitKey(1);
+		// detect key presses
+		char c = cv::waitKey(1);
 
-			// key detections
+		// key detections
 
-			GRAYSCALE = false;
+		GRAYSCALE = false;
 
-			if(quitmain==1)
-			{
-				cout << "Quit." << endl;
-				return;
-			}
+		if(quitmain==1)
+		{
+			cout << "Quit." << endl;
+			return;
+		}
 
-			// restart the tracker
-			if(c == 'r')
-			{
-				trackingInitialised = false;
-				facesInRow = 0;
-			}
-			if (!gotFace)
-			{
-				initImg = img.clone();
-				extractFace(img);
-				//vCap.release();
-				//vCap = VideoCapture(device);
-			}
-			if (gotFace)
-			{
-				doTransformation();//fiddle with it
-			}
-		}	
+		// restart the tracker
+		if(c == 'r')
+		{
+			trackingInitialised = false;
+			facesInRow = 0;
+		}
+		if (!gotFace)
+		{
+			initImg = img.clone();
+			frameSize = Size((int) vCap.get(CV_CAP_PROP_FRAME_WIDTH), (int) vCap.get(CV_CAP_PROP_FRAME_HEIGHT));
+			inputFPS = vCap.get(CV_CAP_PROP_FPS);
+			extractFace(img);
+			//vCap.release();
+			//vCap = VideoCapture(device);
+		}
+		if (gotFace)
+		{
+			doTransformation();//fiddle with it
+		}
+	}	
 
-		trackingInitialised = false;
-		facesInRow = 0;
+	trackingInitialised = false;
+	facesInRow = 0;
+	
+}
+
+void doTracking(int argc, char **argv)//rewrite of doFaceTracking in progress to cut down on old and unnecessary shit. switch to it when it's complete. 
+{
+	vector<string> arguments = get_arguments(argc, argv);
+	CLMWrapper::CLMParameters clmParams(arguments);
+	clmParams.wSizeCurrent = clmParams.wSizeInit;
+	PoseDetectorHaar::PoseDetectorHaarParameters haarParams;
+	haarParams.ClassifierLocation = "..\\lib\\3rdParty\\OpenCV\\classifiers\\haarcascade_frontalface_alt.xml";
+	CascadeClassifier classifier(haarParams.ClassifierLocation);
+	VideoCapture videoIn;
+	videoIn = VideoCapture("Z:\\Documents\\Project\\init.wmv");
+	if (!videoIn.isOpened())
+	{
+		printf("Could not open video file");
+		return;
+	}
+	Mat img;
+	videoIn.read(img);
+	while (!img.empty())
+	{
+		Mat gray;
+		Mat rgbimg;
+		cvtColor(img, gray, CV_BGR2GRAY);
+		cvtColor(img, rgbimg, CV_GRAY2RGB);
+		parsecolour(rgbimg);
 	}
 }
 
+
+
+
+
+/*EVALUATION STUFF STARTS HERE
+**
+**
+**
+**
+**
+**
+**
+*/
+
+VideoCapture src;
+VideoCapture out;
+
+vector<Mat> colourGlobal(Mat img, int size)
+{
+	vector<Mat> planes;
+	split(img, planes);
+	float range[] = {0,256};
+	const float* ranges = {range};
+	for (int i = 0; i < 3; i++)
+	{
+		calcHist(&planes[i],1,0,Mat(),planes[i],1,&size,&ranges);
+	}
+	return planes;
+}
+
+vector<vector<Mat>> colourLocal(Mat img, int size, int divs)
+{
+	vector<Mat> planes;
+	split(img, planes);
+	vector<vector<Mat>> result;
+	float range[] = {0,256};
+	const float* ranges = {range};
+	int roiWidth = img.cols/divs;
+	int roiHeight = img.rows/divs;
+	for (int i = 0; i < 3; i++)
+	{
+		Mat cropped;
+		result.push_back(vector<Mat>());
+		for (int j = 0; j < divs; j++)
+		{
+			for (int k = 0; k < divs; k++)
+			{
+				Rect roi(j*roiWidth, k*roiHeight, (j+1)*roiWidth, (k+1)*roiHeight);
+				Mat croppedRef(planes[i], roi);
+				croppedRef.copyTo(cropped);
+				calcHist(&cropped,1,0,Mat(),cropped,1,&size,&ranges);
+				result[i].push_back(cropped);
+			}
+		}
+	}
+	return result;
+}
+
+Mat gradGlobal(Mat img, int size)
+{
+	Mat xImg, yImg, mag, angle;
+	Mat blurred;
+	GaussianBlur(img,blurred,Size(3,3),0);
+	Scharr(blurred, xImg, CV_32F, 1, 0);
+	Scharr(blurred, yImg, CV_32F, 0, 1);
+	cartToPolar(xImg,yImg,mag,angle);
+	Mat hist;
+	float range[] = {0,M_PI*2};
+	const float* ranges = {range};
+	calcHist(&angle,1,0,Mat(),hist,1,&size,&ranges);
+	return hist;
+}
+
+vector<Mat> gradLocal(Mat img, int size, int divs)
+{
+	Mat xImg, yImg, mag, angle;
+	Mat blurred;
+	GaussianBlur(img,blurred,Size(3,3),0);
+	Scharr(blurred, xImg, CV_32F, 1, 0);
+	Scharr(blurred, yImg, CV_32F, 0, 1);
+	cartToPolar(xImg,yImg,mag,angle);
+	float range[] = {0,M_PI*2};
+	const float* ranges = {range};
+	vector<Mat> result;
+	int roiWidth = img.cols/divs;
+	int roiHeight = img.rows/divs;
+	for (int i = 0; i < divs; i++)
+	{
+		for (int j = 0; j < divs; j++)
+		{
+			Mat hist;
+			Rect roi(i*roiWidth, j*roiHeight, (i+1)*roiWidth, (j+1)*roiHeight);
+			Mat croppedRef(img, roi);
+			calcHist(&croppedRef,1,0,Mat(),hist,1,&size,&ranges);
+			result.push_back(hist);
+		}
+	}
+	return result;
+}
+
+double compare(Mat srcHist, Mat outHist, Mat initHist)//expected to be a value between 0 and 1 - higher is better (closer to the source frame than the init frame)
+{
+	Mat srcN,outN,initN;
+	normalize(srcHist,srcN);
+	normalize(outHist, outN);
+	normalize(initHist, initN);
+	double src_out = compareHist(srcN,outN,CV_COMP_HELLINGER);
+	double init_out = compareHist(initN,outN,CV_COMP_HELLINGER);
+	double measure = init_out/(src_out+init_out);
+	return measure;
+}
+
+void evaluate()
+{
+	Mat srcImg, outImg;
+	src.read(srcImg);
+	srcImg.copyTo(initImg);
+	out.read(outImg);
+	while (!srcImg.empty())
+	{
+		globalGradientResults.push_back(compare(gradGlobal(srcImg,8), gradGlobal(outImg,8), gradGlobal(initImg,8)));
+		double colourg;
+		for (int i = 0; i < 3; i++)
+		{
+			colourg += compare(colourGlobal(srcImg,8)[i], colourGlobal(outImg,8)[i],colourGlobal(initImg,8)[i]);
+		}
+		colourg /= 3;
+		globalColourResults.push_back(colourg);
+		double gradl;
+		int divs = 5;
+		for (int i = 0; i < divs*divs; i++)
+		{
+			gradl += compare(gradLocal(srcImg,8,divs)[i],gradLocal(outImg,8,divs)[i],gradLocal(initImg,8,divs)[i]);
+		}
+		gradl /= (divs*divs);
+		localGradientResults.push_back(gradl);
+		double colourl;
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < divs*divs; j++)
+			{
+				colourl += compare(colourLocal(srcImg,8,divs)[i][j],colourLocal(outImg,8,divs)[i][j],colourLocal(initImg,8,divs)[i][j]);
+			}
+		}
+		colourl /= (3*divs*divs);
+		localColourResults.push_back(colourl);
+		src.read(srcImg);
+		out.read(outImg);
+	}
+}
+
+void evaluationMain(string source, string output)
+{
+	src.open(source);
+	out.open(output);
+	if (src.isOpened() && out.isOpened())
+	{
+		evaluate();
+	}
+	//Do stuff with the results, such as writing to file
+	ofstream resultsFile("Z:\\results.txt", ios::trunc);
+	for (int i = 0; i < globalGradientResults.size(); i++)
+	{
+		if (i < globalGradientResults.size() - 1)
+		{
+			resultsFile << globalGradientResults[i] << ",";
+		}
+		else
+		{
+			resultsFile << globalGradientResults[i] << "\n";
+		}
+	}
+	for (int i = 0; i < localGradientResults.size(); i++)
+	{
+		if (i < localGradientResults.size() - 1)
+		{
+			resultsFile << localGradientResults[i] << ",";
+		}
+		else
+		{
+			resultsFile << localGradientResults[i] << "\n";
+		}
+	}
+	for (int i = 0; i < globalColourResults.size(); i++)
+	{
+		if (i < globalColourResults.size() - 1)
+		{
+			resultsFile << globalColourResults[i] << ",";
+		}
+		else
+		{
+			resultsFile << globalColourResults[i] << "\n";
+		}
+	}
+	for (int i = 0; i < localColourResults.size(); i++)
+	{
+		if (i < localColourResults.size() - 1)
+		{
+			resultsFile << localColourResults[i] << ",";
+		}
+		else
+		{
+			resultsFile << localColourResults[i] << "\n";
+		}
+	}
+	resultsFile.close();
+}
+
+
+
+
+
 int main (int argc, char **argv)
 {
-	omp_init_lock(&writelock);	
 	glutInit(&argc, argv);
-	doFaceTracking(argc, argv);
-	omp_destroy_lock(&writelock);
+	//doFaceTracking(argc, argv);
+	evaluationMain("Z:\\Documents\\Project\\init.wmv","Z:\\init.wmv");
 	return 0;
 }
