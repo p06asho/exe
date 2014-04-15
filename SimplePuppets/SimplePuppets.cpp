@@ -40,8 +40,8 @@
 // SimpleCLM.cpp : Defines the entry point for the console application.
 //#include <glew.h>
 #define _USE_MATH_DEFINES
-#include <omp.h>
 #include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <glew.h>
@@ -55,8 +55,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/photo/photo.hpp>
 #include <math.h>
-#include <fstream>
-#include <iostream>
 
 // The modules that are being used for tracking
 CLMTracker::TrackerCLM clmModel;
@@ -67,6 +65,7 @@ Mat avatarS2;				//shape
 String avatarfile2;			//file where the avatar is
 string file = "..\\videos\\default.wmv";
 string oldfile;
+int fourCC;
 
 bool GETFACE = false;		//get a new face
 bool SHOWIMAGE = false;		//show the webcam image (in the main window). Turned on when the matrix isn't empty
@@ -79,8 +78,6 @@ Mat shape;
 Point features[66];
 Point initFeatures[66];
 bool gotContext;
-int mainargc;
-char **mainargv;
 int GLWindowID;
 GLuint textures[3];
 Mat initImg;
@@ -97,6 +94,163 @@ vector<double> globalColourResults;
 vector<double> localColourResults;
 vector<double> globalGradientResults;
 vector<double> localGradientResults;
+Mat frame;
+
+
+VideoCapture src;
+VideoCapture out;
+
+
+vector<Mat> colourGlobal(Mat img, int size)
+{
+	vector<Mat> planes;
+	split(img, planes);
+	float range[] = {0,256};
+	const float* ranges = {range};
+	for (int i = 0; i < 3; i++)
+	{
+		calcHist(&planes[i],1,0,Mat(),planes[i],1,&size,&ranges);
+	}
+	return planes;
+}
+
+vector<vector<Mat>> colourLocal(Mat img, int size, int divs)
+{
+	vector<Mat> planes;
+	split(img, planes);
+	vector<vector<Mat>> result;
+	float range[] = {0,256};
+	const float* ranges = {range};
+	int roiWidth = img.cols/divs;
+	int roiHeight = img.rows/divs;
+	for (int i = 0; i < 3; i++)
+	{
+		Mat cropped;
+		result.push_back(vector<Mat>());
+		for (int j = 0; j < divs; j++)
+		{
+			for (int k = 0; k < divs; k++)
+			{
+				Rect roi(j*roiWidth, k*roiHeight, (j+1)*roiWidth, (k+1)*roiHeight);
+				Mat croppedRef(planes[i], roi);
+				croppedRef.copyTo(cropped);
+				calcHist(&cropped,1,0,Mat(),cropped,1,&size,&ranges);
+				result[i].push_back(cropped);
+			}
+		}
+	}
+	return result;
+}
+
+Mat gradGlobal(Mat img, int size)
+{
+	Mat xImg, yImg, mag, angle, blurred;
+	GaussianBlur(img,blurred,Size(3,3),0);
+	Scharr(blurred, xImg, CV_32F, 1, 0);
+	Scharr(blurred, yImg, CV_32F, 0, 1);
+	cartToPolar(xImg,yImg,mag,angle);
+	Mat hist;
+	float range[] = {0,M_PI*2};
+	const float* ranges = {range};
+	calcHist(&angle,1,0,Mat(),hist,1,&size,&ranges);
+	return hist;
+}
+
+vector<Mat> gradLocal(Mat img, int size, int divs)
+{
+	Mat xImg, yImg, mag, angle,blurred;
+	GaussianBlur(img,blurred,Size(3,3),0);
+	Scharr(blurred, xImg, CV_32F, 1, 0);
+	Scharr(blurred, yImg, CV_32F, 0, 1);
+	cartToPolar(xImg,yImg,mag,angle);
+	float range[] = {0,M_PI*2};
+	const float* ranges = {range};
+	vector<Mat> result;
+	int roiWidth = img.cols/divs;
+	int roiHeight = img.rows/divs;
+	for (int i = 0; i < divs; i++)
+	{
+		for (int j = 0; j < divs; j++)
+		{
+			Mat hist, cropped;
+			Rect roi(i*roiWidth, j*roiHeight, (i+1)*roiWidth, (j+1)*roiHeight);
+			Mat croppedRef(img, roi);
+			croppedRef.copyTo(cropped);
+			calcHist(&cropped,1,0,Mat(),hist,1,&size,&ranges);
+			result.push_back(hist);
+		}
+	}
+	return result;
+}
+
+double compare(Mat srcHist, Mat outHist, Mat initHist)//expected to be a value between 0 and 1 - higher is better (closer to the source frame than the init frame)
+{
+	Mat srcN,outN,initN;
+	normalize(srcHist,srcN);
+	normalize(outHist, outN);
+	normalize(initHist, initN);
+	double src_out = compareHist(srcN,outN,CV_COMP_HELLINGER);
+	double init_out = compareHist(initN,outN,CV_COMP_HELLINGER);
+	double measure = init_out/(src_out+init_out);
+	return measure;
+}
+
+void evaluate()
+{
+	Mat srcImg, outImg;
+	src.read(srcImg);
+	srcImg.copyTo(initImg);
+	out.read(outImg);
+	while (!srcImg.empty())
+	{
+		globalGradientResults.push_back(compare(gradGlobal(srcImg,8), gradGlobal(outImg,8), gradGlobal(initImg,8)));
+		double colourg;
+		for (int i = 0; i < 3; i++)
+		{
+			colourg += compare(colourGlobal(srcImg,8)[i], colourGlobal(outImg,8)[i],colourGlobal(initImg,8)[i]);
+		}
+		colourg /= 3;
+		globalColourResults.push_back(colourg);
+		double gradl;
+		int divs = 5;
+		for (int i = 0; i < divs*divs; i++)
+		{
+			gradl += compare(gradLocal(srcImg,8,divs)[i],gradLocal(outImg,8,divs)[i],gradLocal(initImg,8,divs)[i]);
+		}
+		gradl /= (divs*divs);
+		localGradientResults.push_back(gradl);
+		double colourl;
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < divs*divs; j++)
+			{
+				colourl += compare(colourLocal(srcImg,8,divs)[i][j],colourLocal(outImg,8,divs)[i][j],colourLocal(initImg,8,divs)[i][j]);
+			}
+		}
+		colourl /= (3*divs*divs);
+		localColourResults.push_back(colourl);
+		src.read(srcImg);
+		out.read(outImg);
+	}
+}
+
+void evaluationMain(string source, string output)
+{
+	src.open(source);
+	if (!src.isOpened())
+	{
+		printf("Failed to open source file");
+	}
+	out.open(output);
+	if (!out.isOpened())
+	{
+		printf("Failed to open output file");
+	}
+	if (src.isOpened() && out.isOpened())
+	{
+		evaluate();
+	}
+}
 
 
 void use_webcam(){			//called when the 'use webcam' checkbox is ticked
@@ -301,7 +455,7 @@ vector<string> get_arguments(int argc, char **argv)
 
 void writeFrame()
 {
-	Mat frame(initImg.rows, initImg.cols, initImg.type());
+	frame = Mat(initImg.rows, initImg.cols, initImg.type());
 	glReadPixels(0, 0, frame.cols, frame.rows, GL_BGR, GL_UNSIGNED_BYTE, frame.data);
 	flip(frame, frame, 0);
 	videoOut.write(frame);
@@ -943,7 +1097,7 @@ void doTransformation()
 		gotContext = true;
 		matToTexture(GL_NEAREST, GL_NEAREST, GL_CLAMP);
 		getLips();
-		videoOut.open("Z:/out.wmv", CV_FOURCC('W','M','V','2'), inputFPS, frameSize);
+		videoOut.open("Z:/out.wmv", fourCC, inputFPS, frameSize);
 		if (videoOut.isOpened())
 		{
 			printf("Video out opened");
@@ -1495,12 +1649,40 @@ void doFaceTracking(int argc, char **argv){
 			frameSize = Size((int) vCap.get(CV_CAP_PROP_FRAME_WIDTH), (int) vCap.get(CV_CAP_PROP_FRAME_HEIGHT));
 			inputFPS = vCap.get(CV_CAP_PROP_FPS);
 			extractFace(img);
+			fourCC = vCap.get(CV_CAP_PROP_FOURCC);
 			//vCap.release();
 			//vCap = VideoCapture(device);
 		}
 		if (gotFace)
 		{
 			doTransformation();//fiddle with it
+
+/*			globalGradientResults.push_back(compare(gradGlobal(img,8), gradGlobal(frame,8), gradGlobal(initImg,8)));
+			double colourg;
+			for (int i = 0; i < 3; i++)
+			{
+				colourg += compare(colourGlobal(img,8)[i], colourGlobal(frame,8)[i],colourGlobal(initImg,8)[i]);
+			}
+			colourg /= 3;
+			globalColourResults.push_back(colourg);
+			double gradl;
+			int divs = 5;
+			for (int i = 0; i < divs*divs; i++)
+			{
+				gradl += compare(gradLocal(img,8,divs)[i],gradLocal(frame,8,divs)[i],gradLocal(initImg,8,divs)[i]);
+			}
+			gradl /= (divs*divs);
+			localGradientResults.push_back(gradl);
+			double colourl;
+			for (int i = 0; i < 3; i++)
+			{
+				for (int j = 0; j < divs*divs; j++)
+				{
+					colourl += compare(colourLocal(img,8,divs)[i][j],colourLocal(frame,8,divs)[i][j],colourLocal(initImg,8,divs)[i][j]);
+				}
+			}
+			colourl /= (3*divs*divs);
+			localColourResults.push_back(colourl);*/
 		}
 	}	
 
@@ -1540,163 +1722,12 @@ void doTracking(int argc, char **argv)//rewrite of doFaceTracking in progress to
 
 
 
-/*EVALUATION STUFF STARTS HERE
-**
-**
-**
-**
-**
-**
-**
-*/
 
-VideoCapture src;
-VideoCapture out;
 
-vector<Mat> colourGlobal(Mat img, int size)
+
+void writeOut()
 {
-	vector<Mat> planes;
-	split(img, planes);
-	float range[] = {0,256};
-	const float* ranges = {range};
-	for (int i = 0; i < 3; i++)
-	{
-		calcHist(&planes[i],1,0,Mat(),planes[i],1,&size,&ranges);
-	}
-	return planes;
-}
-
-vector<vector<Mat>> colourLocal(Mat img, int size, int divs)
-{
-	vector<Mat> planes;
-	split(img, planes);
-	vector<vector<Mat>> result;
-	float range[] = {0,256};
-	const float* ranges = {range};
-	int roiWidth = img.cols/divs;
-	int roiHeight = img.rows/divs;
-	for (int i = 0; i < 3; i++)
-	{
-		Mat cropped;
-		result.push_back(vector<Mat>());
-		for (int j = 0; j < divs; j++)
-		{
-			for (int k = 0; k < divs; k++)
-			{
-				Rect roi(j*roiWidth, k*roiHeight, (j+1)*roiWidth, (k+1)*roiHeight);
-				Mat croppedRef(planes[i], roi);
-				croppedRef.copyTo(cropped);
-				calcHist(&cropped,1,0,Mat(),cropped,1,&size,&ranges);
-				result[i].push_back(cropped);
-			}
-		}
-	}
-	return result;
-}
-
-Mat gradGlobal(Mat img, int size)
-{
-	Mat xImg, yImg, mag, angle;
-	Mat blurred;
-	GaussianBlur(img,blurred,Size(3,3),0);
-	Scharr(blurred, xImg, CV_32F, 1, 0);
-	Scharr(blurred, yImg, CV_32F, 0, 1);
-	cartToPolar(xImg,yImg,mag,angle);
-	Mat hist;
-	float range[] = {0,M_PI*2};
-	const float* ranges = {range};
-	calcHist(&angle,1,0,Mat(),hist,1,&size,&ranges);
-	return hist;
-}
-
-vector<Mat> gradLocal(Mat img, int size, int divs)
-{
-	Mat xImg, yImg, mag, angle;
-	Mat blurred;
-	GaussianBlur(img,blurred,Size(3,3),0);
-	Scharr(blurred, xImg, CV_32F, 1, 0);
-	Scharr(blurred, yImg, CV_32F, 0, 1);
-	cartToPolar(xImg,yImg,mag,angle);
-	float range[] = {0,M_PI*2};
-	const float* ranges = {range};
-	vector<Mat> result;
-	int roiWidth = img.cols/divs;
-	int roiHeight = img.rows/divs;
-	for (int i = 0; i < divs; i++)
-	{
-		for (int j = 0; j < divs; j++)
-		{
-			Mat hist;
-			Rect roi(i*roiWidth, j*roiHeight, (i+1)*roiWidth, (j+1)*roiHeight);
-			Mat croppedRef(img, roi);
-			calcHist(&croppedRef,1,0,Mat(),hist,1,&size,&ranges);
-			result.push_back(hist);
-		}
-	}
-	return result;
-}
-
-double compare(Mat srcHist, Mat outHist, Mat initHist)//expected to be a value between 0 and 1 - higher is better (closer to the source frame than the init frame)
-{
-	Mat srcN,outN,initN;
-	normalize(srcHist,srcN);
-	normalize(outHist, outN);
-	normalize(initHist, initN);
-	double src_out = compareHist(srcN,outN,CV_COMP_HELLINGER);
-	double init_out = compareHist(initN,outN,CV_COMP_HELLINGER);
-	double measure = init_out/(src_out+init_out);
-	return measure;
-}
-
-void evaluate()
-{
-	Mat srcImg, outImg;
-	src.read(srcImg);
-	srcImg.copyTo(initImg);
-	out.read(outImg);
-	while (!srcImg.empty())
-	{
-		globalGradientResults.push_back(compare(gradGlobal(srcImg,8), gradGlobal(outImg,8), gradGlobal(initImg,8)));
-		double colourg;
-		for (int i = 0; i < 3; i++)
-		{
-			colourg += compare(colourGlobal(srcImg,8)[i], colourGlobal(outImg,8)[i],colourGlobal(initImg,8)[i]);
-		}
-		colourg /= 3;
-		globalColourResults.push_back(colourg);
-		double gradl;
-		int divs = 5;
-		for (int i = 0; i < divs*divs; i++)
-		{
-			gradl += compare(gradLocal(srcImg,8,divs)[i],gradLocal(outImg,8,divs)[i],gradLocal(initImg,8,divs)[i]);
-		}
-		gradl /= (divs*divs);
-		localGradientResults.push_back(gradl);
-		double colourl;
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < divs*divs; j++)
-			{
-				colourl += compare(colourLocal(srcImg,8,divs)[i][j],colourLocal(outImg,8,divs)[i][j],colourLocal(initImg,8,divs)[i][j]);
-			}
-		}
-		colourl /= (3*divs*divs);
-		localColourResults.push_back(colourl);
-		src.read(srcImg);
-		out.read(outImg);
-	}
-}
-
-void evaluationMain(string source, string output)
-{
-	src.open(source);
-	out.open(output);
-	if (src.isOpened() && out.isOpened())
-	{
-		evaluate();
-	}
-	//Do stuff with the results, such as writing to file
-	ofstream resultsFile("Z:\\results.txt", ios::trunc);
+	std::ofstream resultsFile("Z:\\results.txt", ios::trunc);
 	for (int i = 0; i < globalGradientResults.size(); i++)
 	{
 		if (i < globalGradientResults.size() - 1)
@@ -1745,13 +1776,11 @@ void evaluationMain(string source, string output)
 }
 
 
-
-
-
 int main (int argc, char **argv)
 {
 	glutInit(&argc, argv);
-	//doFaceTracking(argc, argv);
-	evaluationMain("Z:\\Documents\\Project\\init.wmv","Z:\\init.wmv");
+	doFaceTracking(argc, argv);
+	//evaluationMain("Z:\\Documents\\Project\\init.wmv","Z:\\init.wmv");
+	writeOut();
 	return 0;
 }
