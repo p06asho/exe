@@ -1,4 +1,4 @@
-﻿Build started 15/04/2014 13:15:12.
+﻿Build started 03/05/2014 15:05:41.
      1>Project "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\exe\SimplePuppets\SimplePuppets.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Release\SimplePuppets.unsuccessfulbuild" because "AlwaysCreate" was specified.
@@ -9,84 +9,89 @@
                  z:\Programs\VS2010\VC\include\stdio.h(234) : see declaration of 'fopen'
      1>Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\local\CLMWrapper\include\CLMParameters.h(176): warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
      1>Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\local\CLMWrapper\include\CLMParameters.h(183): warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
-     1>SimplePuppets.cpp(153): warning C4305: 'initializing' : truncation from 'double' to 'float'
-     1>SimplePuppets.cpp(166): warning C4305: 'initializing' : truncation from 'double' to 'float'
-     1>SimplePuppets.cpp(510): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(519): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(535): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(606): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(729): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(735): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(804): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(804): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(808): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(808): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(159): warning C4305: 'initializing' : truncation from 'double' to 'float'
+     1>SimplePuppets.cpp(174): warning C4305: 'initializing' : truncation from 'double' to 'float'
+     1>SimplePuppets.cpp(518): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(527): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(543): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(614): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(737): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(743): warning C4018: '<' : signed/unsigned mismatch
      1>SimplePuppets.cpp(812): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
      1>SimplePuppets.cpp(812): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(817): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(817): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(821): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(821): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(816): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(816): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(820): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(820): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
      1>SimplePuppets.cpp(825): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(830): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(830): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(834): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(834): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(825): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(829): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(829): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(833): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
      1>SimplePuppets.cpp(838): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(843): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(843): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(847): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(838): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(842): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(842): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(846): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
      1>SimplePuppets.cpp(851): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
      1>SimplePuppets.cpp(851): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(856): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(856): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(860): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(855): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(859): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(859): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
      1>SimplePuppets.cpp(864): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
      1>SimplePuppets.cpp(864): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(869): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(873): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(873): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(868): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(872): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(872): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
      1>SimplePuppets.cpp(877): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
-     1>SimplePuppets.cpp(887): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(944): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(944): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(951): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(951): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(960): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(966): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(966): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(979): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(997): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(997): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(1004): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(1004): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(1012): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(1035): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(1035): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(1042): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(1042): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(1051): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(1069): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(1069): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(1076): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(1076): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>SimplePuppets.cpp(1191): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(1206): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(1260): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(1476): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+     1>SimplePuppets.cpp(881): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(881): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(885): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>SimplePuppets.cpp(895): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(952): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(952): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(959): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(959): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(968): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(974): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(974): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(987): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1005): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(1005): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(1012): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(1012): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(1020): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1043): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(1043): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(1050): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(1050): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(1059): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1077): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(1077): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(1084): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(1084): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>SimplePuppets.cpp(1199): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1214): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1225): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1278): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1501): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
                  z:\Programs\VS2010\VC\include\stdio.h(371) : see declaration of 'sprintf'
-     1>SimplePuppets.cpp(1599): warning C4996: '_itoa': This function or variable may be unsafe. Consider using _itoa_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+     1>SimplePuppets.cpp(1624): warning C4996: '_itoa': This function or variable may be unsafe. Consider using _itoa_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
                  z:\Programs\VS2010\VC\include\stdlib.h(451) : see declaration of '_itoa'
-     1>SimplePuppets.cpp(1650): warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
-     1>SimplePuppets.cpp(1652): warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
-     1>SimplePuppets.cpp(1731): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(1733): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(1742): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(1744): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(1753): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(1755): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(1764): warning C4018: '<' : signed/unsigned mismatch
-     1>SimplePuppets.cpp(1766): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1675): warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
+     1>SimplePuppets.cpp(1677): warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
+     1>SimplePuppets.cpp(1783): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1785): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1794): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1796): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1805): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1807): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1816): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1818): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1827): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1829): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1838): warning C4018: '<' : signed/unsigned mismatch
+     1>SimplePuppets.cpp(1840): warning C4018: '<' : signed/unsigned mismatch
        Link:
          z:\Programs\VS2010\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimplePuppets.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\\lib\3rdParty\Glew" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\GTK+\bin" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\boost\lib" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\boost\boost" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\boost" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\lib\Release" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\GTK+\lib" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\freeglut\lib" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\OpenCV\lib\Release" /LIBPATH:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\lib\3rdParty\boost\lib" opengl32.lib "gtk-win32-2.0.lib" "gdk-win32-2.0.lib" "atk-1.0.lib" "gdk_pixbuf-2.0.lib" glew.lib "pangowin32-1.0.lib" "pangocairo-1.0.lib" "pango-1.0.lib" cairo.lib "gthread-2.0.lib" "gobject-2.0.lib" "gmodule-2.0.lib" "glib-2.0.lib" user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib glu32.lib freeglut.lib opencv_calib3d246.lib opencv_contrib246.lib opencv_core246.lib opencv_features2d246.lib opencv_flann246.lib opencv_gpu246.lib opencv_highgui246.lib opencv_imgproc246.lib opencv_legacy246.lib opencv_ml246.lib opencv_nonfree246.lib opencv_objdetect246.lib opencv_photo246.lib opencv_stitching246.lib opencv_ts246.lib opencv_video246.lib opencv_videostab246.lib "libboost_filesystem-vc100-mt-1_54.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\SimplePuppets.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimplePuppets.pdb" /SUBSYSTEM:CONSOLE /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\SimplePuppets.lib" /MACHINE:X86 /PROFILE Release\SimplePuppets.obj
          "Z:\Downloads\CLM Framework\tbaltrusaitis-clm_framework-fb215dee2098\Release\CLMWrapper.lib"
@@ -115,4 +120,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:11.62
+Time Elapsed 00:00:17.88

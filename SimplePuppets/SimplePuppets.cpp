@@ -56,6 +56,9 @@
 #include <opencv2/photo/photo.hpp>
 #include <math.h>
 
+#define NFRAMES 15
+#define EVALUATE
+
 // The modules that are being used for tracking
 CLMTracker::TrackerCLM clmModel;
 //A few OpenCV mats:
@@ -94,6 +97,8 @@ vector<double> globalColourResults;
 vector<double> localColourResults;
 vector<double> globalGradientResults;
 vector<double> localGradientResults;
+vector<double> absoluteGradGlobal;
+vector<double> absoluteColourGlobal;
 Mat frame;
 
 
@@ -131,7 +136,7 @@ vector<vector<Mat>> colourLocal(Mat img, int size, int divs)
 		{
 			for (int k = 0; k < divs; k++)
 			{
-				Rect roi(j*roiWidth, k*roiHeight, (j+1)*roiWidth, (k+1)*roiHeight);
+				Rect roi(j*roiWidth, k*roiHeight, roiWidth, roiHeight);
 				Mat croppedRef(planes[i], roi);
 				croppedRef.copyTo(cropped);
 				calcHist(&cropped,1,0,Mat(),cropped,1,&size,&ranges);
@@ -144,14 +149,15 @@ vector<vector<Mat>> colourLocal(Mat img, int size, int divs)
 
 Mat gradGlobal(Mat img, int size)
 {
-	Mat xImg, yImg, mag, angle, blurred;
-	GaussianBlur(img,blurred,Size(3,3),0);
+	Mat xImg, yImg, mag, angle, blurred, hist;
+	Mat gray(img.rows, img.cols, CV_8UC1);
+	cvtColor(img, gray, CV_BGR2GRAY);
+	GaussianBlur(gray,blurred,Size(3,3),0);
 	Scharr(blurred, xImg, CV_32F, 1, 0);
 	Scharr(blurred, yImg, CV_32F, 0, 1);
 	cartToPolar(xImg,yImg,mag,angle);
-	Mat hist;
 	float range[] = {0,M_PI*2};
-	const float* ranges = {range};
+	const float* ranges = range;
 	calcHist(&angle,1,0,Mat(),hist,1,&size,&ranges);
 	return hist;
 }
@@ -159,7 +165,9 @@ Mat gradGlobal(Mat img, int size)
 vector<Mat> gradLocal(Mat img, int size, int divs)
 {
 	Mat xImg, yImg, mag, angle,blurred;
-	GaussianBlur(img,blurred,Size(3,3),0);
+	Mat gray(img.rows, img.cols, CV_8UC1);
+	cvtColor(img, gray, CV_BGR2GRAY);
+	GaussianBlur(gray,blurred,Size(3,3),0);
 	Scharr(blurred, xImg, CV_32F, 1, 0);
 	Scharr(blurred, yImg, CV_32F, 0, 1);
 	cartToPolar(xImg,yImg,mag,angle);
@@ -173,8 +181,8 @@ vector<Mat> gradLocal(Mat img, int size, int divs)
 		for (int j = 0; j < divs; j++)
 		{
 			Mat hist, cropped;
-			Rect roi(i*roiWidth, j*roiHeight, (i+1)*roiWidth, (j+1)*roiHeight);
-			Mat croppedRef(img, roi);
+			Rect roi(i*roiWidth, j*roiHeight, roiWidth, roiHeight);
+			Mat croppedRef(angle, roi);
 			croppedRef.copyTo(cropped);
 			calcHist(&cropped,1,0,Mat(),hist,1,&size,&ranges);
 			result.push_back(hist);
@@ -183,15 +191,15 @@ vector<Mat> gradLocal(Mat img, int size, int divs)
 	return result;
 }
 
-double compare(Mat srcHist, Mat outHist, Mat initHist)//expected to be a value between 0 and 1 - higher is better (closer to the source frame than the init frame)
+double compare(Mat srcHist, Mat outHist, Mat initHist)//expected to be a value between 0 and 1 - lower is better (closer to the source frame than the init frame)
 {
 	Mat srcN,outN,initN;
 	normalize(srcHist,srcN);
 	normalize(outHist, outN);
 	normalize(initHist, initN);
-	double src_out = compareHist(srcN,outN,CV_COMP_HELLINGER);
-	double init_out = compareHist(initN,outN,CV_COMP_HELLINGER);
-	double measure = init_out/(src_out+init_out);
+	double src_out = compareHist(srcN,outN,CV_COMP_CHISQR);
+	double init_src = compareHist(initN,srcN,CV_COMP_CHISQR);
+	double measure = src_out/(src_out+init_src);
 	return measure;
 }
 
@@ -1209,6 +1217,17 @@ void getExtraPoints(Mat edges)
 		}
 	}//17-19, right ear
 	//getNeck();
+	Mat extras = initImg.clone();
+	for (int i = 0; i < 66; i++)
+	{
+		cv::circle(extras, features[i], 1, Scalar(255,255,255));
+	}
+	for (int i = 0; i < extraPoints.size(); i++)
+	{
+		cv::circle(extras, extraPoints[i], 1, Scalar(0,0,255));
+	}
+	imwrite("Z:\\initImg.jpg", initImg);
+	imwrite("Z:\\extras.jpg", extras);
 }
 
 string getImgType(int imgTypeInt)
@@ -1245,8 +1264,7 @@ void extractFace(Mat img)
 		initFeatures[i] = features[i];
 	}
 	//get some edges so we can try to include the hair
-	Mat gray;
-	Mat edges;
+	Mat gray, edges;
 	cvtColor(img, gray, CV_BGR2GRAY);
 	double thresh = threshold(gray, edges, 0, 255, THRESH_BINARY+THRESH_OTSU);
 	Canny(gray, edges, thresh/2.0, thresh);
@@ -1273,6 +1291,7 @@ void extractFace(Mat img)
 	printf("Array size: %d \n", arraySize);
 	int pointSize = sizeof features[0];
 	printf("Point size: %d \n", pointSize);
+	imwrite("Z:\\edges.jpg", edges);
 }
 
 void doFaceTracking(int argc, char **argv){
@@ -1415,14 +1434,20 @@ void doFaceTracking(int argc, char **argv){
 	Mat disp;
 	Mat rgbimg;
 
+	Mat otherImg = imread("Z:\\Documents\\Project\\pic3.jpg");
+	printf("With out different %f ", compare(gradGlobal(img,12), gradGlobal(otherImg,12), gradGlobal(img,12)));
+	printf("With init different %f ", compare(gradGlobal(img,12), gradGlobal(img,12), gradGlobal(otherImg,12)));
+	printf("With src different %f ", compare(gradGlobal(otherImg,12), gradGlobal(img,12), gradGlobal(img,12)));
+	Mat ggOther,ggImg;
+	normalize(gradGlobal(otherImg,12),ggOther);
+	normalize(gradGlobal(img,12),ggImg);
+	double comparator = compareHist(ggOther, ggImg, CV_COMP_CHISQR);
+	printf("For hopefully different images %f ", comparator);
+
 	CHANGESOURCE = false;
 
-
-	//todo: fix bug with crash when selecting video file to play under webcam mode (disable video select button?)
-	//also occasionally opencv error when changing between different sizes of video input/webcam owing to shape going outside boundries. 
-
-
 	gotContext = false;
+	int nFrame = 1;
 	while(!img.empty() && !CHANGESOURCE && !done)						//This is where stuff happens once the file's open.
 	{		
 		//for constant-size input:
@@ -1656,34 +1681,61 @@ void doFaceTracking(int argc, char **argv){
 		if (gotFace)
 		{
 			doTransformation();//fiddle with it
+			imwrite("Z:\\disp.jpg", disp);
 
-/*			globalGradientResults.push_back(compare(gradGlobal(img,8), gradGlobal(frame,8), gradGlobal(initImg,8)));
-			double colourg;
-			for (int i = 0; i < 3; i++)
+#ifdef EVALUATE
+			if (nFrame == NFRAMES)
 			{
-				colourg += compare(colourGlobal(img,8)[i], colourGlobal(frame,8)[i],colourGlobal(initImg,8)[i]);
-			}
-			colourg /= 3;
-			globalColourResults.push_back(colourg);
-			double gradl;
-			int divs = 5;
-			for (int i = 0; i < divs*divs; i++)
-			{
-				gradl += compare(gradLocal(img,8,divs)[i],gradLocal(frame,8,divs)[i],gradLocal(initImg,8,divs)[i]);
-			}
-			gradl /= (divs*divs);
-			localGradientResults.push_back(gradl);
-			double colourl;
-			for (int i = 0; i < 3; i++)
-			{
-				for (int j = 0; j < divs*divs; j++)
+				globalGradientResults.push_back(compare(gradGlobal(img,12), gradGlobal(frame,12), gradGlobal(initImg,12)));
+				Mat srcN, imgN;
+				normalize(gradGlobal(img,12),srcN);
+				normalize(gradGlobal(frame,12),imgN);
+				absoluteGradGlobal.push_back(compareHist(srcN,imgN,CV_COMP_CHISQR));
+				double colourg;
+				vector<Mat> gCHistimg = colourGlobal(img, 8);
+				vector<Mat> gCHistframe = colourGlobal(frame, 8);
+				vector<Mat> gCHistinit = colourGlobal(initImg, 8);
+				double gcAbs;
+				for (int i = 0; i < 3; i++)
 				{
-					colourl += compare(colourLocal(img,8,divs)[i][j],colourLocal(frame,8,divs)[i][j],colourLocal(initImg,8,divs)[i][j]);
+					colourg += compare(gCHistimg[i], gCHistframe[i], gCHistinit[i]);
+					normalize(gCHistimg[i], imgN);
+					normalize(gCHistframe[i],srcN);
+					gcAbs += compareHist(srcN,imgN,CV_COMP_CHISQR);
 				}
+				gcAbs = gcAbs/3;
+				absoluteColourGlobal.push_back(gcAbs);
+				colourg /= 3;
+				globalColourResults.push_back(colourg);
+				double gradl;
+				int divs = 8;
+				vector<Mat> lGHistimg = gradLocal(img, 12, divs);
+				vector<Mat> lGHistframe = gradLocal(frame, 12, divs);
+				vector<Mat> lGHistinit = gradLocal(initImg, 12, divs);
+				for (int i = 0; i < divs*divs; i++)
+				{
+					gradl += compare(lGHistimg[i],lGHistframe[i],lGHistinit[i]);
+				}
+				gradl /= (divs*divs);
+				localGradientResults.push_back(gradl);
+				double colourl;
+				vector<vector<Mat>> lCHistimg = colourLocal(img, 8, divs);
+				vector<vector<Mat>> lCHistframe = colourLocal(frame, 8, divs);
+				vector<vector<Mat>> lCHistinit = colourLocal(initImg, 8, divs);
+				for (int i = 0; i < 3; i++)
+				{
+					for (int j = 0; j < divs*divs; j++)
+					{
+						colourl += compare(lCHistimg[i][j],lCHistframe[i][j],lCHistinit[i][j]);
+					}
+				}
+				colourl /= (3*divs*divs);
+				localColourResults.push_back(colourl);
+				nFrame = 0;
 			}
-			colourl /= (3*divs*divs);
-			localColourResults.push_back(colourl);*/
+#endif
 		}
+		nFrame += 1;
 	}	
 
 	trackingInitialised = false;
@@ -1691,7 +1743,7 @@ void doFaceTracking(int argc, char **argv){
 	
 }
 
-void doTracking(int argc, char **argv)//rewrite of doFaceTracking in progress to cut down on old and unnecessary shit. switch to it when it's complete. 
+void doTracking(int argc, char **argv)//rewrite of doFaceTracking
 {
 	vector<string> arguments = get_arguments(argc, argv);
 	CLMWrapper::CLMParameters clmParams(arguments);
@@ -1772,6 +1824,28 @@ void writeOut()
 			resultsFile << localColourResults[i] << "\n";
 		}
 	}
+	for (int i = 0; i < absoluteGradGlobal.size(); i++)
+	{
+		if (i < absoluteGradGlobal.size() - 1)
+		{
+			resultsFile << absoluteGradGlobal[i] << ",";
+		}
+		else
+		{
+			resultsFile << absoluteGradGlobal[i] << "\n";
+		}
+	}
+	for (int i = 0; i < absoluteColourGlobal.size(); i++)
+	{
+		if (i < absoluteColourGlobal.size() - 1)
+		{
+			resultsFile << absoluteColourGlobal[i] << ",";
+		}
+		else
+		{
+			resultsFile << absoluteColourGlobal[i] << "\n";
+		}
+	}
 	resultsFile.close();
 }
 
@@ -1781,6 +1855,8 @@ int main (int argc, char **argv)
 	glutInit(&argc, argv);
 	doFaceTracking(argc, argv);
 	//evaluationMain("Z:\\Documents\\Project\\init.wmv","Z:\\init.wmv");
+#ifdef EVALUATE
 	writeOut();
+#endif
 	return 0;
 }
