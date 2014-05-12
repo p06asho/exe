@@ -57,7 +57,7 @@
 #include <math.h>
 
 #define NFRAMES 15
-#define EVALUATE
+//#define EVALUATE
 
 // The modules that are being used for tracking
 CLMTracker::TrackerCLM clmModel;
@@ -282,172 +282,6 @@ using namespace std;
 using namespace cv;
 
 // takes in doubles for orientation for added precision, but ultimately returns a float matrix
-Matx33f Euler2RotationMatrix(const Vec3d& eulerAngles)
-{
-	Matx33f rotationMatrix;
-
-	double s1 = sin(eulerAngles[0]);
-	double s2 = sin(eulerAngles[1]);
-	double s3 = sin(eulerAngles[2]);
-
-	double c1 = cos(eulerAngles[0]);
-	double c2 = cos(eulerAngles[1]);
-	double c3 = cos(eulerAngles[2]);
-
-	rotationMatrix(0,0) = (float)(c2 * c3);
-	rotationMatrix(0,1) = (float)(-c2 *s3);
-	rotationMatrix(0,2) = (float)(s2);
-	rotationMatrix(1,0) = (float)(c1 * s3 + c3 * s1 * s2);
-	rotationMatrix(1,1) = (float)(c1 * c3 - s1 * s2 * s3);
-	rotationMatrix(1,2) = (float)(-c2 * s1);
-	rotationMatrix(2,0) = (float)(s1 * s3 - c1 * c3 * s2);
-	rotationMatrix(2,1) = (float)(c3 * s1 + c1 * s2 * s3);
-	rotationMatrix(2,2) = (float)(c1 * c2);
-
-	return rotationMatrix;
-}
-
-void Project(Mat_<float>& dest, const Mat_<float>& mesh, Size size, double fx, double fy, double cx, double cy)
-{
-	dest = Mat_<float>(mesh.rows,2, 0.0);
-
-	int NbPoints = mesh.rows;
-
-	register float X, Y, Z;
-
-
-	Mat_<float>::const_iterator mData = mesh.begin();
-	Mat_<float>::iterator projected = dest.begin();
-
-	for(int i = 0;i < NbPoints; i++)
-	{
-		// Get the points
-		X = *(mData++);
-		Y = *(mData++);
-		Z = *(mData++);
-
-		float x;
-		float y;
-
-		// if depth is 0 the projection is different
-		if(Z != 0)
-		{
-			x = (float)((X * fx / Z) + cx);
-			y = (float)((Y * fy / Z) + cy);
-		}
-		else
-		{
-			x = X;
-			y = Y;
-		}
-
-		// Clamping to image size
-		if( x < 0 )	
-		{
-			x = 0.0;
-		}
-		else if (x > size.width - 1)
-		{
-			x = size.width - 1.0f;
-		}
-		if( y < 0 )
-		{
-			y = 0.0;
-		}
-		else if( y > size.height - 1) 
-		{
-			y = size.height - 1.0f;
-		}
-
-		// Project and store in dest matrix
-		(*projected++) = x;
-		(*projected++) = y;
-	}
-
-}
-
-void DrawBox(Mat image, Vec6d pose, Scalar color, int thickness, float fx, float fy, float cx, float cy)
-{
-	float boxVerts[] = {-1, 1, -1,
-		1, 1, -1,
-		1, 1, 1,
-		-1, 1, 1,
-		1, -1, 1,
-		1, -1, -1,
-		-1, -1, -1,
-		-1, -1, 1};
-	Mat_<float> box = Mat(8, 3, CV_32F, boxVerts).clone() * 100;
-
-
-	Matx33f rot = Euler2RotationMatrix(Vec3d(pose[3], pose[4], pose[5]));
-	Mat_<float> rotBox;
-
-	Mat((Mat(rot) * box.t())).copyTo(rotBox);
-	rotBox = rotBox.t();
-
-	rotBox.col(0) = rotBox.col(0) + pose[0];
-	rotBox.col(1) = rotBox.col(1) + pose[1];
-	rotBox.col(2) = rotBox.col(2) + pose[2];
-
-	// draw the lines
-	Mat_<float> rotBoxProj;
-	Project(rotBoxProj, rotBox, image.size(), fx, fy, cx, cy);
-
-	Mat begin;
-	Mat end;
-
-	rotBoxProj.row(0).copyTo(begin);
-	rotBoxProj.row(1).copyTo(end);
-	cv::line(image, Point((int)begin.at<float>(0), (int)begin.at<float>(1)), Point((int)end.at<float>(0), (int)end.at<float>(1)), color, thickness);
-
-	rotBoxProj.row(1).copyTo(begin);
-	rotBoxProj.row(2).copyTo(end);
-	cv::line(image, Point((int)begin.at<float>(0), (int)begin.at<float>(1)), Point((int)end.at<float>(0), (int)end.at<float>(1)), color, thickness);
-
-	rotBoxProj.row(2).copyTo(begin);
-	rotBoxProj.row(3).copyTo(end);
-	cv::line(image, Point((int)begin.at<float>(0), (int)begin.at<float>(1)), Point((int)end.at<float>(0), (int)end.at<float>(1)), color, thickness);
-
-	rotBoxProj.row(0).copyTo(begin);
-	rotBoxProj.row(3).copyTo(end);
-	//std::cout << begin <<endl;
-	//std::cout << end <<endl;
-	cv::line(image, Point((int)begin.at<float>(0), (int)begin.at<float>(1)), Point((int)end.at<float>(0), (int)end.at<float>(1)), color, thickness);
-
-	rotBoxProj.row(2).copyTo(begin);
-	rotBoxProj.row(4).copyTo(end);
-	cv::line(image, Point((int)begin.at<float>(0), (int)begin.at<float>(1)), Point((int)end.at<float>(0), (int)end.at<float>(1)), color, thickness);
-
-	rotBoxProj.row(1).copyTo(begin);
-	rotBoxProj.row(5).copyTo(end);
-	cv::line(image, Point((int)begin.at<float>(0), (int)begin.at<float>(1)), Point((int)end.at<float>(0), (int)end.at<float>(1)), color, thickness);
-
-	rotBoxProj.row(0).copyTo(begin);
-	rotBoxProj.row(6).copyTo(end);
-	cv::line(image, Point((int)begin.at<float>(0), (int)begin.at<float>(1)), Point((int)end.at<float>(0), (int)end.at<float>(1)), color, thickness);
-
-	rotBoxProj.row(3).copyTo(begin);
-	rotBoxProj.row(7).copyTo(end);
-	cv::line(image, Point((int)begin.at<float>(0), (int)begin.at<float>(1)), Point((int)end.at<float>(0), (int)end.at<float>(1)), color, thickness);
-
-	rotBoxProj.row(6).copyTo(begin);
-	rotBoxProj.row(5).copyTo(end);
-	cv::line(image, Point((int)begin.at<float>(0), (int)begin.at<float>(1)), Point((int)end.at<float>(0), (int)end.at<float>(1)), color, thickness);
-
-	rotBoxProj.row(5).copyTo(begin);
-	rotBoxProj.row(4).copyTo(end);
-	cv::line(image, Point((int)begin.at<float>(0), (int)begin.at<float>(1)), Point((int)end.at<float>(0), (int)end.at<float>(1)), color, thickness);
-
-	rotBoxProj.row(4).copyTo(begin);
-	rotBoxProj.row(7).copyTo(end);
-	cv::line(image, Point((int)begin.at<float>(0), (int)begin.at<float>(1)), Point((int)end.at<float>(0), (int)end.at<float>(1)), color, thickness);
-
-	rotBoxProj.row(7).copyTo(begin);
-	rotBoxProj.row(6).copyTo(end);
-	cv::line(image, Point((int)begin.at<float>(0), (int)begin.at<float>(1)), Point((int)end.at<float>(0), (int)end.at<float>(1)), color, thickness);
-
-
-}
 
 vector<string> get_arguments(int argc, char **argv)
 {
@@ -623,6 +457,8 @@ void doInpainting(Mat img)
 	dilate(mask, mask, Mat(), Point(-1,-1), 20);
 	inpaint(img, mask, inpainted, 5, INPAINT_TELEA);
 	background = inpainted;
+	imwrite("Z:\\mask.jpg", mask);
+	imwrite("Z:\\bckgd.jpg", inpainted);
 }
 
 void updateExtraPoints()
@@ -1220,11 +1056,11 @@ void getExtraPoints(Mat edges)
 	Mat extras = initImg.clone();
 	for (int i = 0; i < 66; i++)
 	{
-		cv::circle(extras, features[i], 1, Scalar(255,255,255));
+		cv::circle(extras, features[i], 1, Scalar(255,255,255), 4);
 	}
 	for (int i = 0; i < extraPoints.size(); i++)
 	{
-		cv::circle(extras, extraPoints[i], 1, Scalar(0,0,255));
+		cv::circle(extras, extraPoints[i], 1, Scalar(0,0,255), 4);
 	}
 	imwrite("Z:\\initImg.jpg", initImg);
 	imwrite("Z:\\extras.jpg", extras);
@@ -1283,6 +1119,7 @@ void extractFace(Mat img)
 	}
 	namedWindow("triangles", 1);
 	imshow("triangles", triangles);
+	imwrite("Z:\\triangles.jpg",triangles);
 	mouth = imread("Z:\\Documents\\Project\\mouth.jpg");
 	string imageType = getImgType(img.type());
 	printf("Image size: %d \n", sizeof img);
@@ -1378,7 +1215,7 @@ void doFaceTracking(int argc, char **argv){
 			USEWEBCAM = 1;
 		}
 	}
-	vCap = VideoCapture("Z:\\Documents\\Project\\init.wmv");
+	vCap = VideoCapture("Z:\\Documents\\Project\\Videos\\Video4.wmv");
 	if (!vCap.isOpened())
 	{
 		printf("Failed to open file");
@@ -1675,13 +1512,12 @@ void doFaceTracking(int argc, char **argv){
 			inputFPS = vCap.get(CV_CAP_PROP_FPS);
 			extractFace(img);
 			fourCC = vCap.get(CV_CAP_PROP_FOURCC);
-			//vCap.release();
-			//vCap = VideoCapture(device);
+			vCap.release();
+			vCap = VideoCapture(device);
 		}
 		if (gotFace)
 		{
 			doTransformation();//fiddle with it
-			imwrite("Z:\\disp.jpg", disp);
 
 #ifdef EVALUATE
 			if (nFrame == NFRAMES)
