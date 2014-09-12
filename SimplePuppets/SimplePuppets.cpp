@@ -1215,7 +1215,7 @@ void doFaceTracking(int argc, char **argv){
 			USEWEBCAM = 1;
 		}
 	}
-	vCap = VideoCapture("Z:\\Documents\\Project\\Videos\\Video4.wmv");
+	vCap = VideoCapture("Z:\\Documents\\Project\\init.wmv");
 	if (!vCap.isOpened())
 	{
 		printf("Failed to open file");
@@ -1430,7 +1430,6 @@ void doFaceTracking(int argc, char **argv){
 		poseEstimateCLM = CLMWrapper::GetPoseCLM(clmModel, fx, fy, cx, cy, clmParams);
 
 		shape = clmModel._shape;
-		//Use poseEstimateCLM for box
 		int n = shape.rows / 2;
 		int idx = clmModel._clm.GetViewIdx();
 		for (int i = 0; i < n; ++i)
@@ -1440,7 +1439,6 @@ void doFaceTracking(int argc, char **argv){
 			if (clmModel._clm._visi[0][idx].at<int>(i)) visi[i] = true;
 			else visi[i] = false;
 		}
-		//DrawBox(disp, poseEstimateCLM, Scalar(0,0,255), 3, fx, fy, cx, cy);
 
 		if(frameProc % 10 == 0)
 		{      
@@ -1512,8 +1510,8 @@ void doFaceTracking(int argc, char **argv){
 			inputFPS = vCap.get(CV_CAP_PROP_FPS);
 			extractFace(img);
 			fourCC = vCap.get(CV_CAP_PROP_FOURCC);
-			vCap.release();
-			vCap = VideoCapture(device);
+			//vCap.release();
+			//vCap = VideoCapture(device);
 		}
 		if (gotFace)
 		{
